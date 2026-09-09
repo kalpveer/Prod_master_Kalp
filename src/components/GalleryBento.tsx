@@ -8,152 +8,176 @@ const galleryItems = [
     type: 'image',
     src: '/gallery/IMG_4899.jpg',
     span: 'col-span-2 row-span-2 md:col-span-2 md:row-span-2',
-    alt: 'NUVenture'
+    alt: 'NUVenture',
   },
   {
     type: 'image',
     src: '/gallery/IMG_5058.jpg',
     span: 'col-span-2 row-span-1 md:col-span-2 md:row-span-1',
-    alt: 'Ideas in Motion'
+    alt: 'Ideas in Motion',
+  },
+  {
+    type: 'image',
+    src: '/gallery/booth-team.jpg',
+    span: 'col-span-1 row-span-2 md:col-span-1 md:row-span-2',
+    alt: 'Productica booth team',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.16.06 PM (1).jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: "Productica's First Office"
+    alt: "Productica's First Office",
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.16.06 PM (2).jpeg',
     span: 'col-span-1 row-span-2 md:col-span-1 md:row-span-2',
-    alt: 'Productica Discussion Session'
+    alt: 'Productica Discussion Session',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.16.07 PM.jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'First Prototype'
+    alt: 'Builder workspace',
   },
   {
     type: 'video',
     src: '/gallery/WhatsApp Video 2026-06-22 at 3.16.12 PM.mp4',
     span: 'col-span-2 row-span-2 md:col-span-2 md:row-span-2',
-    alt: 'TiECon Highlights'
+    alt: 'TiECon Highlights',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.16.13 PM.jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'TiECon Vadodara Participation'
+    alt: 'TiECon Vadodara Participation',
+  },
+  {
+    type: 'image',
+    src: '/gallery/booth-engagement.jpg',
+    span: 'col-span-2 row-span-1 md:col-span-2 md:row-span-1',
+    alt: 'Live booth engagement',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.16.24 PM (1).jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'Productica @ DMC GESIA'
+    alt: 'Productica @ DMC GESIA',
   },
   {
     type: 'video',
     src: '/gallery/WhatsApp Video 2026-06-22 at 3.16.24 PM.mp4',
     span: 'col-span-2 row-span-2 md:col-span-2 md:row-span-2',
-    alt: 'Interview with Media Agencies'
+    alt: 'Interview with Media Agencies',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.16.25 PM (1).jpeg',
     span: 'col-span-1 row-span-2 md:col-span-1 md:row-span-2',
-    alt: 'Mumbai Journey Start'
+    alt: 'Mumbai Journey Start',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.16.25 PM.jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: "Productica's Mumbai Pitstop"
+    alt: "Productica's Mumbai Pitstop",
   },
   {
     type: 'image',
-    src: '/gallery/WhatsApp Image 2026-06-22 at 3.17.23 PM (1).jpeg',
-    span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'Crossed 27,000+ Users First Time'
-  },
-  {
-    type: 'image',
-    src: '/gallery/WhatsApp Image 2026-06-22 at 3.17.23 PM (2).jpeg',
-    span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'F65 Award'
-  },
-  {
-    type: 'image',
-    src: '/gallery/WhatsApp Image 2026-06-22 at 3.17.23 PM.jpeg',
-    span: 'col-span-2 row-span-1 md:col-span-2 md:row-span-1',
-    alt: "Top AI Company in '25"
-  },
-  {
-    type: 'image',
-    src: '/gallery/WhatsApp Image 2026-06-22 at 3.17.24 PM (1).jpeg',
-    span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'Crossed 80,000+ Users'
+    src: '/gallery/content-shoot-outdoor.jpg',
+    span: 'col-span-1 row-span-2 md:col-span-1 md:row-span-2',
+    alt: 'Content shoot outdoors',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.17.24 PM.jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'Community Building'
+    alt: 'Live product demo',
+  },
+  {
+    type: 'image',
+    src: '/gallery/booth-word-quest.jpg',
+    span: 'col-span-2 row-span-1 md:col-span-2 md:row-span-1',
+    alt: 'Booth Word Quest',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.18.28 PM.jpeg',
     span: 'col-span-2 row-span-2 md:col-span-2 md:row-span-2',
-    alt: 'Building From Mumbai'
+    alt: 'Building From Mumbai',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.18.29 PM (1).jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'Community Building'
+    alt: 'On stage at Navrachana',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.18.29 PM.jpeg',
     span: 'col-span-2 row-span-1 md:col-span-2 md:row-span-1',
-    alt: 'Mumbai Team'
+    alt: 'Mumbai Team',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.18.30 PM (1).jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'Startup Street'
+    alt: 'Startup Street booth',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.18.30 PM.jpeg',
     span: 'col-span-1 row-span-2 md:col-span-1 md:row-span-2',
-    alt: 'Founders on stage'
+    alt: 'Founders on stage',
+  },
+  {
+    type: 'image',
+    src: '/gallery/tetrathon-2026.jpg',
+    span: 'col-span-2 row-span-2 md:col-span-2 md:row-span-2',
+    alt: 'Tetrathon 2026 — Indo-French AI Innovation Sprint',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.18.31 PM (1).jpeg',
     span: 'col-span-2 row-span-2 md:col-span-2 md:row-span-2',
-    alt: 'HackBaroda'
+    alt: 'HackBaroda',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.18.31 PM.jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'Behind the Build'
+    alt: 'Behind the Build',
+  },
+  {
+    type: 'image',
+    src: '/gallery/build-what-people-want.jpg',
+    span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
+    alt: 'Build what people want',
+  },
+  {
+    type: 'image',
+    src: '/gallery/beta-night-skyline.jpg',
+    span: 'col-span-1 row-span-2 md:col-span-1 md:row-span-2',
+    alt: 'Shipping beta by night',
+  },
+  {
+    type: 'image',
+    src: '/gallery/hardware-build-desk.jpg',
+    span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
+    alt: 'Hardware & build desk',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.19.41 PM.jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'E-Chai Vadodara'
+    alt: 'E-Chai Vadodara',
   },
   {
     type: 'image',
     src: '/gallery/WhatsApp Image 2026-06-22 at 3.20.20 PM.jpeg',
     span: 'col-span-1 row-span-1 md:col-span-1 md:row-span-1',
-    alt: 'MOU Signing'
-  }
+    alt: 'MOU Signing',
+  },
 ];
 
 export default function GalleryBento() {
@@ -185,7 +209,7 @@ export default function GalleryBento() {
           Moments <span className="text-zinc-400 font-semibold italic">& Highlights.</span>
         </h2>
         <p className="text-zinc-400 font-light text-base md:text-lg max-w-2xl leading-relaxed">
-          Explore our journeys in action. Click on any item below to view full details and highlights of our events.
+          Real moments from booths, summits, shoots, and builds — click any photo to open it full screen.
         </p>
       </div>
 

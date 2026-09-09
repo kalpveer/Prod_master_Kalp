@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 
 const sections = [
   { id: 'reality', label: '01. Reality' },
-  { id: 'validate', label: '02. Validate' },
-  { id: 'agents', label: '03. Agents' },
-  { id: 'achievements', label: '04. Achievements' },
-  { id: 'stack', label: '05. Stack' },
-  { id: 'ecosystem', label: '06. Ecosystem' },
+  { id: 'free-validation', label: '02. Validate' },
+  { id: 'agents', label: '03. Productica Teams' },
+  { id: 'why-choose', label: '04. Why choose' },
+  { id: 'achievements', label: '05. Achievements' },
+  { id: 'stack', label: '06. Stack' },
   { id: 'spis', label: '07. SPIS' },
   { id: 'pricing-section', label: '08. Pricing' },
   { id: 'contact', label: '09. Contact' },
@@ -77,7 +77,6 @@ export default function TableOfContents() {
 
   return (
     <div className="hidden md:flex fixed right-8 top-1/2 -translate-y-1/2 z-[90] flex-col justify-between h-[340px] pointer-events-auto mix-blend-difference text-white">
-      {/* Subtle vertical track */}
       <div className="absolute top-0 right-0 h-full w-[1px] bg-white/20 pointer-events-none" />
 
       {sections.map(({ id, label }) => (
@@ -88,7 +87,6 @@ export default function TableOfContents() {
           className="group relative flex items-center justify-end w-32 h-4 cursor-pointer"
           aria-label={label}
         >
-          {/* Label (Always visible when active, fades in on hover otherwise) */}
           <span
             className={`absolute right-10 text-[9px] font-mono uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap pointer-events-none ${
               activeSection === id
@@ -99,7 +97,6 @@ export default function TableOfContents() {
             {label}
           </span>
 
-          {/* Right line indicator instead of dot */}
           <div
             className={`absolute right-0 h-[1px] transition-all duration-500 ease-out origin-right flex ${
               activeSection === id
@@ -112,4 +109,3 @@ export default function TableOfContents() {
     </div>
   );
 }
-

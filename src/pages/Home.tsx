@@ -11,6 +11,7 @@ import ScrollStory from '../components/ScrollStory';
 import ReactiveTypography from '../components/ReactiveTypography';
 import IdeaFlow from '../components/IdeaFlow';
 import AgenticPlatform from '../components/AgenticPlatform';
+import WhyChooseProductica from '../components/WhyChooseProductica';
 
 import SocialProof from '../components/SocialProof';
 
@@ -31,52 +32,59 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative overflow-clip selection:bg-black selection:text-white">
-      {loading && <Preloader isLoading={videoLoading} onComplete={() => {
-        setLoading(false);
-        sessionStorage.setItem('preloaderDone', 'true');
-      }} />}
-      {!loading && <Navbar />}
-      <TableOfContents />
-      
-      {/* Dynamic Static PNG Noise Overlay */}
-      <NoiseOverlay />
+      <main className="relative overflow-clip selection:bg-black selection:text-white">
+        {loading && <Preloader isLoading={videoLoading} onComplete={() => {
+          setLoading(false);
+          sessionStorage.setItem('preloaderDone', 'true');
+        }} />}
+        {!loading && <Navbar />}
+        <TableOfContents />
 
-      {/* Progress Bar */}
-      <motion.div 
-        className="fixed top-0 left-0 h-1 bg-black z-[60] origin-left"
-        style={{ scaleX: scrollYProgress }}
-      />
+        <NoiseOverlay />
 
-      <Hero onVideoLoad={() => setVideoLoading(false)} />
-      
+        <motion.div
+          className="fixed top-0 left-0 h-1 bg-black z-[60] origin-left"
+          style={{ scaleX: scrollYProgress }}
+        />
 
+        {/* 1. Hero (film) */}
+        <Hero onVideoLoad={() => setVideoLoading(false)} />
+
+        {/* 2. Reality / worth the build */}
         <div id="about">
           <ScrollStory />
         </div>
-        <div id="validate" className="scroll-mt-20">
-          <ReactiveTypography />
-          <IdeaFlow />
-        </div>
+        <ReactiveTypography />
+        <IdeaFlow />
+
+        {/* 3. Agents */}
         <div id="agents">
           <AgenticPlatform />
         </div>
 
+        {/* 4. Why choose / who it’s for (immediately after Agents) */}
+        <WhyChooseProductica />
+
+        {/* 5. Existing proof / stack / SPIS / affiliations */}
         <div id="achievements">
           <SocialProof />
         </div>
         <div id="stack">
           <Modules />
         </div>
-
+        {/* SPIS only — Who Serves orbit removed to avoid duplicating Why-choose */}
         <div id="ecosystem">
           <EcosystemDifference />
         </div>
+
+        {/* 6. Credits: Productica One + Productica Teams */}
         <Pricing />
+
         <Testimony />
+
+        {/* 7. Contact */}
         <Contact />
         <Footer />
-
-    </main>
+      </main>
   );
 }

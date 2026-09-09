@@ -92,6 +92,25 @@ function App() {
 
   // Intercept all terms and home links globally for instant dynamic routing
   useEffect(() => {
+    const scrollToHash = (hash: string) => {
+      const id = hash.startsWith('#') ? hash.slice(1) : hash;
+      if (!id) return false;
+      const el = document.getElementById(id);
+      if (!el) return false;
+
+      const lenis = (window as any).lenis;
+      if (lenis && typeof lenis.scrollTo === 'function') {
+        lenis.scrollTo(el, {
+          duration: 1.2,
+          easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          offset: -20,
+        });
+      } else {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+      return true;
+    };
+
     const handleGlobalClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const anchor = target.closest('a');
@@ -100,8 +119,13 @@ function App() {
         const href = anchor.getAttribute('href') || '';
         const text = anchor.textContent || '';
         
-        // Save homepage scroll position before leaving
-        if (currentPath === '/' && href !== '/' && !href.startsWith('/#')) {
+        // Save homepage scroll position before leaving (skip in-page hashes)
+        if (
+          currentPath === '/' &&
+          href !== '/' &&
+          !href.startsWith('/#') &&
+          !(href.startsWith('#') && href.length > 1)
+        ) {
           sessionStorage.setItem('homeScrollY', window.scrollY.toString());
         }
         
@@ -132,7 +156,22 @@ function App() {
 
         const audienceMatch = href.match(/\/(founders|incubators|investors|researchers|universities)$/);
 
-        if (isTermsOrPrivacy) {
+        // In-page hash links (hero CTAs, etc.) — Lenis needs an explicit scrollTo
+        if (href.startsWith('#') && href.length > 1 && !href.startsWith('#home')) {
+          e.preventDefault();
+          if (currentPath !== '/') {
+            window.history.pushState(null, '', `/${href}`);
+            setCurrentPath('/');
+            setTimeout(() => {
+              window.history.replaceState(null, '', href);
+              scrollToHash(href);
+              [100, 300, 600].forEach((delay) => setTimeout(() => scrollToHash(href), delay));
+            }, 50);
+          } else {
+            window.history.pushState(null, '', href);
+            scrollToHash(href);
+          }
+        } else if (isTermsOrPrivacy) {
           e.preventDefault();
           window.history.pushState(null, '', '/terms');
           setCurrentPath('/terms');
@@ -171,7 +210,7 @@ function App() {
           e.preventDefault();
           
           const isHashRoute = href.startsWith('/#');
-          const targetHash = isHashRoute ? href.substring(1) : href === '#home' ? '#home' : '';
+          const targetHash = isHashRoute ? href.slice(1) : href === '#home' ? '#home' : '';
 
           if (currentPath !== '/') {
             window.history.pushState(null, '', href);
@@ -187,29 +226,17 @@ function App() {
                 } else {
                   window.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'instant' });
                 }
-              } else if (targetHash) {
-                const attemptHashScroll = () => {
-                  const el = document.getElementById(targetHash);
-                  if (el) {
-                    if ((window as any).lenis) {
-                      (window as any).lenis.scrollTo(el, { immediate: true });
-                    } else {
-                      el.scrollIntoView({ behavior: 'instant' });
-                    }
-                  }
-                };
-                
-                attemptHashScroll();
-                [100, 300, 600, 1000].forEach(delay => setTimeout(attemptHashScroll, delay));
+              } else if (targetHash && targetHash !== '#home') {
+                scrollToHash(targetHash);
+                [100, 300, 600, 1000].forEach((delay) => setTimeout(() => scrollToHash(targetHash), delay));
               } else {
                 window.scrollTo({ top: 0, behavior: 'instant' });
               }
             }, 50);
           } else {
             window.history.pushState(null, '', href);
-            if (targetHash) {
-              const el = document.getElementById(targetHash.substring(1));
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            if (targetHash && targetHash !== '#home') {
+              scrollToHash(targetHash);
             } else {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }

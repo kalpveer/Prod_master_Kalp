@@ -3,20 +3,11 @@ import { Quote } from 'lucide-react';
 
 const testimonials = [
   {
-    quote: "Productica completely shifted how we validate ideas. The AI agents act like a seasoned board of advisors that catch every blind spot.",
-    author: "Sarah J.",
-    role: "Founder & CEO"
+    quote:
+      "I've been using Productica to evaluate my startup's path to product-market fit, and the insights are incredibly valuable. It gave a clear, data-driven overview of our strengths and weaknesses — the kind of clarity that cuts through the noise and helps prioritize what to focus on next.",
+    author: 'Sachin Attikatti',
+    role: 'Founder & CEO, AcademyHunt',
   },
-  {
-    quote: "Instead of spending months building the wrong features, the Virtual Product Strategist helped us hone in on what our early adopters actually wanted.",
-    author: "Michael T.",
-    role: "Technical Co-Founder"
-  },
-  {
-    quote: "The Investor readiness matrices stress-tested our pitch before we even talked to a VC. We walked into meetings significantly more confident.",
-    author: "Elena R.",
-    role: "Startup Founder"
-  }
 ];
 
 export default function Testimony() {
@@ -50,10 +41,10 @@ export default function Testimony() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`grid grid-cols-1 gap-6 ${testimonials.length > 1 ? 'md:grid-cols-3' : 'md:grid-cols-1 max-w-2xl mx-auto'}`}>
           {testimonials.map((t, idx) => (
             <motion.div
-              key={idx}
+              key={t.author}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -61,7 +52,7 @@ export default function Testimony() {
               className="p-8 bg-zinc-950/40 border border-white/5 hover:border-white/10 rounded-2xl flex flex-col justify-between gap-8 transition-colors"
             >
               <p className="text-lg text-white/80 font-light leading-relaxed">
-                "{t.quote}"
+                &ldquo;{t.quote}&rdquo;
               </p>
               
               <div className="flex items-center gap-4">

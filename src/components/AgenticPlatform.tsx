@@ -452,10 +452,10 @@ export default function AgenticPlatform() {
         >
           <div className="space-y-1 flex-1">
             <span className="text-[10px] uppercase tracking-[0.4em] text-white/30 font-semibold block">
-              Venture Intelligence Agents
+              Productica Teams
             </span>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tight leading-tight">
-              AI Agents Built for <span className="text-white/40">Venture Building.</span>
+              Productica Teams for <span className="text-white/40">Venture Building.</span>
             </h2>
           </div>
           

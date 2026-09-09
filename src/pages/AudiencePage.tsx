@@ -7,7 +7,6 @@ import StartupDNA from '../components/StartupDNA';
 import IntelligenceMap from '../components/IntelligenceMap';
 import ResearchNetwork from '../components/ResearchNetwork';
 import InvestorLayers from '../components/InvestorLayers';
-import UniversityKPIs from '../components/UniversityKPIs';
 
 import itmSls from '../data/Incubators Logos/ITM SLS INC.jpeg';
 import itmV from '../data/Incubators Logos/ITM V INC.jpeg';
@@ -144,7 +143,26 @@ export default function AudiencePage({ segment, data }: AudiencePageProps) {
         ) : segment === 'investors' ? (
           <InvestorLayers title={data.howItHelps.title} cards={data.howItHelps.cards} />
         ) : segment === 'universities' ? (
-          <UniversityKPIs />
+          <section className="w-full max-w-5xl mx-auto px-6">
+            <h2 className="text-3xl font-light tracking-tight text-white mb-12 text-center">
+              {data.howItHelps.title}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {data.howItHelps.cards.map((card, idx) => (
+                <div
+                  key={idx}
+                  className="p-8 border border-white/10 rounded-[18px] bg-white/[0.02] hover:bg-white/[0.04] transition-colors flex flex-col gap-4"
+                >
+                  {(() => {
+                    const Icon = card.icon;
+                    return <Icon className="w-6 h-6 text-zinc-400" />;
+                  })()}
+                  <h3 className="text-xl font-medium text-white">{card.title}</h3>
+                  <p className="text-zinc-400 leading-relaxed text-sm text-justify">{card.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
         ) : (
           <section className="w-full max-w-7xl mx-auto px-6">
             <h2 className="text-3xl font-light tracking-tight text-white mb-12 text-center">

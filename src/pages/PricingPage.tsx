@@ -10,16 +10,36 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { generateRecommendedJourney } from '../data/moduleDependencies';
 import { JOURNEYS, type Journey } from '../data/journeys';
+import {
+  DASHBOARD_CREDIT_PACKS,
+  DASHBOARD_BILLING_URL,
+  CREDIT_FX_NOTE,
+  formatUsd,
+} from '../data/dashboardCreditPacks';
+import {
+  AGENT_USE_CASES,
+  AGENT_DISPLAY_NAMES,
+  AGENT_CREDIT_PACKS,
+  AGENT_CREDIT_FX_NOTE,
+  AGENTS_BUY_CREDITS_URL,
+  ULTRAPLANNER_PRICE,
+  formatInrPrimary,
+  formatUltraPlannerFee,
+  estimateCustomGoalCredits,
+  type AgentId,
+} from '../data/agentCredits';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DATA
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const CREDIT_PACKAGES = [
-  { credits: 25, price: null },
-  { credits: 50, price: null },
-  { credits: 100, price: null },
-];
+export const CREDIT_PACKAGES = AGENT_CREDIT_PACKS.map((p) => ({
+  credits: p.credits,
+  price: p.usdPrice,
+  name: p.name,
+  inrRange: p.inrRange,
+  inrWasRange: p.inrWasRange,
+}));
 
 export const DASHBOARD_MODULES = [
   { id: 'idea-validation',       name: 'Idea Validation Advanced',   icon: Lightbulb,  credits: 2 },
@@ -89,182 +109,17 @@ const AGENT_LIST = [
   },
 ] as const;
 
-type AgentId = (typeof AGENT_LIST)[number]['id'];
-
 const AGENT_IMAGES: Record<AgentId, string> = {
   'co-founder': '/Cofounder.gif',
   'marketing':  '/marketing.gif',
   'ultraplan':  '/Ultraplan.gif',
 };
 
-const DASHBOARD_BILLING_URL = 'https://app.productica.in/billing';
-const AGENTS_BUY_CREDITS_URL = 'https://agents.productica.in/#buy-credits';
-
-const AGENT_USE_CASES = [
-  {
-    id: 'brainstorming',
-    name: 'Brainstorming',
-    description: 'Explore ideas, angles, and opportunities with structured thinking.',
-    minCredits: 20,
-    maxCredits: 25,
-    agentId: 'co-founder' as AgentId,
-  },
-  {
-    id: 'marketing-plan',
-    name: 'Marketing Plan',
-    description: 'Design a campaign plan, messaging, and channel strategy.',
-    minCredits: 15,
-    maxCredits: 20,
-    agentId: 'marketing' as AgentId,
-  },
-  {
-    id: 'product-refinement',
-    name: 'Product Refinement',
-    description: 'Tighten scope, features, and product decisions with critique.',
-    minCredits: 25,
-    maxCredits: 30,
-    agentId: 'co-founder' as AgentId,
-  },
-  {
-    id: 'product-feedback',
-    name: 'Product Feedback',
-    description: 'Get sharp feedback on UX, value prop, and product clarity.',
-    minCredits: 15,
-    maxCredits: 20,
-    agentId: 'co-founder' as AgentId,
-  },
-  {
-    id: 'pitch-readiness',
-    name: 'Pitch Readiness',
-    description: 'Prepare narrative, deck flow, and investor-ready answers.',
-    minCredits: 30,
-    maxCredits: 45,
-    agentId: 'co-founder' as AgentId,
-  },
-  {
-    id: 'compliance-readiness',
-    name: 'Company Compliance Readiness',
-    description: 'Assess operational and compliance readiness for scale.',
-    minCredits: 25,
-    maxCredits: 30,
-    agentId: 'ultraplan' as AgentId,
-  },
-  {
-    id: 'documentation',
-    name: 'Documentation',
-    description: 'Create SOPs, internal docs, and founder-ready documentation.',
-    minCredits: 20,
-    maxCredits: 30,
-    agentId: 'ultraplan' as AgentId,
-  },
-  {
-    id: 'startup-planning',
-    name: 'Startup Planning',
-    description: 'Build structured plans, milestones, and execution checklists.',
-    minCredits: 25,
-    maxCredits: 35,
-    agentId: 'ultraplan' as AgentId,
-  },
-] as const;
-
-type AgentUseCaseId = (typeof AGENT_USE_CASES)[number]['id'];
-
-const AGENT_NAME_MAP = Object.fromEntries(AGENT_LIST.map(a => [a.id, a.name])) as Record<AgentId, string>;
+const AGENT_NAME_MAP = AGENT_DISPLAY_NAMES;
 const AGENT_META_MAP = Object.fromEntries(AGENT_LIST.map(a => [a.id, a])) as Record<
   AgentId,
   (typeof AGENT_LIST)[number]
 >;
-
-/** Heuristic credit estimate for a free-form custom goal. */
-function estimateCustomGoalCredits(goal: string): {
-  minCredits: number;
-  maxCredits: number;
-  agentId: AgentId;
-  matchedUseCase: string | null;
-} | null {
-  const text = goal.trim().toLowerCase();
-  if (!text) return null;
-
-  // Co-Founder / Marketing first so phrases like "marketing plan" don't hit UltraPlanner
-  const keywordMap: { keywords: string[]; useCaseId: AgentUseCaseId }[] = [
-    { keywords: ['brainstorm', 'ideat', 'explore idea', 'think through'], useCaseId: 'brainstorming' },
-    { keywords: ['marketing', 'campaign', 'gtm', 'growth', 'content', 'ads', 'positioning', 'brand'], useCaseId: 'marketing-plan' },
-    { keywords: ['refin', 'feature', 'scope', 'product direction'], useCaseId: 'product-refinement' },
-    { keywords: ['feedback', 'review my product', 'ux', 'critique'], useCaseId: 'product-feedback' },
-    { keywords: ['pitch', 'investor', 'deck', 'fundraising', 'raise'], useCaseId: 'pitch-readiness' },
-  ];
-
-  for (const entry of keywordMap) {
-    if (entry.keywords.some(k => text.includes(k))) {
-      const useCase = AGENT_USE_CASES.find(u => u.id === entry.useCaseId)!;
-      return {
-        minCredits: useCase.minCredits,
-        maxCredits: useCase.maxCredits,
-        agentId: useCase.agentId,
-        matchedUseCase: useCase.name,
-      };
-    }
-  }
-
-  // UltraPlanner owns compliance, documentation, and startup planning
-  if (
-    text.includes('document') ||
-    text.includes('sop') ||
-    text.includes('handbook') ||
-    text.includes('wiki')
-  ) {
-    const useCase = AGENT_USE_CASES.find(u => u.id === 'documentation')!;
-    return {
-      minCredits: useCase.minCredits,
-      maxCredits: useCase.maxCredits,
-      agentId: 'ultraplan',
-      matchedUseCase: useCase.name,
-    };
-  }
-  if (
-    text.includes('compliance') ||
-    text.includes('legal') ||
-    text.includes('regulation') ||
-    text.includes('policy')
-  ) {
-    const useCase = AGENT_USE_CASES.find(u => u.id === 'compliance-readiness')!;
-    return {
-      minCredits: useCase.minCredits,
-      maxCredits: useCase.maxCredits,
-      agentId: 'ultraplan',
-      matchedUseCase: useCase.name,
-    };
-  }
-  if (
-    text.includes('startup plan') ||
-    text.includes('business plan') ||
-    text.includes('execution plan') ||
-    text.includes('checklist') ||
-    text.includes('milestone') ||
-    text.includes('planning') ||
-    (text.includes('ops') && text.includes('process'))
-  ) {
-    const useCase = AGENT_USE_CASES.find(u => u.id === 'startup-planning')!;
-    return {
-      minCredits: useCase.minCredits,
-      maxCredits: useCase.maxCredits,
-      agentId: 'ultraplan',
-      matchedUseCase: useCase.name,
-    };
-  }
-
-  // Fallback: juggle between Co-Founder and Marketing by signal strength
-  const marketingHints = ['audience', 'channel', 'launch', 'acquisition', 'retention', 'seo', 'social'];
-  const agentId: AgentId = marketingHints.some(k => text.includes(k)) ? 'marketing' : 'co-founder';
-  const words = text.split(/\s+/).filter(Boolean).length;
-  if (words <= 8) {
-    return { minCredits: 15, maxCredits: 20, agentId, matchedUseCase: null };
-  }
-  if (words <= 20) {
-    return { minCredits: 20, maxCredits: 30, agentId, matchedUseCase: null };
-  }
-  return { minCredits: 30, maxCredits: 45, agentId, matchedUseCase: null };
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED UI PRIMITIVES
@@ -889,6 +744,78 @@ function DashboardPlatform() {
         </motion.p>
       </div>
 
+      {/* ── Credit packs ── */}
+      <section id="dashboard-credit-packs" aria-label="Productica One credit packs" className="scroll-mt-28">
+        <div className="text-center mb-10">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/30 font-medium mb-3">
+            Productica One
+          </p>
+          <h2 className="text-3xl md:text-4xl font-light tracking-tight text-white mb-3">
+            Buy <span className="font-semibold">credits</span>
+          </h2>
+          <p className="text-white/50 text-base max-w-xl mx-auto">
+            Priced in USD, with indicative INR in brackets. Checkout on app.productica.in/billing.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-4">
+          {DASHBOARD_CREDIT_PACKS.map((pack, i) => (
+            <motion.a
+              key={pack.id}
+              href={DASHBOARD_BILLING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              className={`relative flex flex-col gap-5 p-6 rounded-2xl border transition-colors ${
+                pack.popular
+                  ? 'border-white/40 bg-white/[0.07]'
+                  : 'border-white/10 bg-white/[0.03] hover:border-white/30 hover:bg-white/[0.06]'
+              }`}
+            >
+              {pack.popular && (
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-white text-black text-[9px] font-semibold tracking-[0.14em] uppercase">
+                  Most popular
+                </span>
+              )}
+              <div>
+                <p className="text-3xl font-semibold text-white tracking-tight">
+                  {pack.credits.toLocaleString()}{' '}
+                  <span className="text-sm font-medium text-white/45">credits</span>
+                </p>
+                <p className="text-sm text-white/45 mt-2 leading-relaxed">{pack.description}</p>
+              </div>
+              <p className="text-2xl font-semibold text-white tabular-nums">
+                {formatUsd(pack.usdPrice)}{' '}
+                <span className="text-sm font-medium text-white/45">({pack.inrRange})</span>
+              </p>
+              <ul className="flex flex-col gap-2">
+                {pack.features.map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-white/55">
+                    <Check className="w-3.5 h-3.5 text-white/70 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <span
+                className={`mt-auto inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold ${
+                  pack.popular
+                    ? 'bg-white text-black'
+                    : 'border border-white/20 text-white/70'
+                }`}
+              >
+                Buy now <ArrowRight className="w-4 h-4" />
+              </span>
+            </motion.a>
+          ))}
+        </div>
+        <p className="mt-5 text-center text-xs text-white/35 leading-relaxed max-w-2xl mx-auto">
+          {CREDIT_FX_NOTE}
+        </p>
+      </section>
+
       {/* ── 1. Templates ── */}
       <section id="templates" aria-label="Templates" className="scroll-mt-28">
         <div className="text-center mb-10">
@@ -1166,7 +1093,7 @@ function DashboardPlatform() {
                 rel="noopener noreferrer"
                 className="mt-2 flex w-full items-center justify-center gap-2 px-5 py-3 rounded-xl border border-white/15 text-white/60 text-sm font-medium hover:text-white hover:border-white/30 active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white/40 outline-none"
               >
-                Explore Dashboard
+                Explore Productica One
               </a>
             </motion.div>
           </div>
@@ -1219,7 +1146,7 @@ function DashboardCTA({ totalCredits }: { totalCredits: number }) {
             rel="noopener noreferrer"
             className="px-8 py-3.5 text-sm font-medium text-white/50 hover:text-white transition-colors duration-200 tracking-wide"
           >
-            Explore Dashboard →
+            Explore Productica One →
           </a>
         </div>
       </div>
@@ -1255,7 +1182,7 @@ function AgentsPlatform() {
   const needsUltraPlanner =
     selectedUseCaseList.some(u => u.agentId === 'ultraplan') ||
     customEstimate?.agentId === 'ultraplan';
-  const ultraPlannerPrice = AGENT_META_MAP.ultraplan.price ?? 6.99;
+  const ultraPlannerPrice = AGENT_META_MAP.ultraplan.price ?? ULTRAPLANNER_PRICE;
 
   const toggleUseCase = useCallback((id: string) => {
     setSelectedUseCases(prev => {
@@ -1282,8 +1209,8 @@ function AgentsPlatform() {
           transition={{ duration: 0.6 }}
           className="text-5xl md:text-6xl font-light tracking-tighter text-white mb-5 leading-[1.05]"
         >
-          Work with your<br />
-          <span className="font-semibold">AI Startup Team.</span>
+          Work with<br />
+          <span className="font-semibold">Productica Teams.</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 16 }}
@@ -1295,11 +1222,69 @@ function AgentsPlatform() {
         </motion.p>
       </div>
 
+      {/* ── Credit bundles ── */}
+      <section aria-label="Productica Teams credit bundles">
+        <div className="text-center mb-10">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/30 font-medium mb-3">
+            Credit Bundles
+          </p>
+          <h2 className="text-3xl md:text-4xl font-light tracking-tight text-white mb-3">
+            Buy <span className="font-semibold">credits</span>
+          </h2>
+          <p className="text-white/50 text-base max-w-xl mx-auto">
+            Priced in INR (indicative), with USD in brackets. Checkout on agents.productica.in.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-4">
+          {AGENT_CREDIT_PACKS.map((pack, i) => (
+            <motion.a
+              key={pack.id}
+              href={AGENTS_BUY_CREDITS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              className="flex flex-col justify-between gap-6 p-6 rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/30 hover:bg-white/[0.06] transition-colors"
+            >
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/35 mb-3">
+                  {pack.name}
+                </p>
+                <p className="text-3xl font-semibold text-white tracking-tight">
+                  {pack.credits}{' '}
+                  <span className="text-sm font-medium text-white/45">credits</span>
+                </p>
+              </div>
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <p className="text-xs text-white/30 line-through mb-1 tabular-nums">
+                    {formatInrPrimary(pack.inrWasRange, pack.usdWas)}
+                  </p>
+                  <p className="text-xl font-semibold text-white tabular-nums">
+                    {pack.inrRange}{' '}
+                    <span className="text-sm font-medium text-white/45">({formatUsd(pack.usdPrice)})</span>
+                  </p>
+                </div>
+                <span className="text-xs text-white/40 inline-flex items-center gap-1">
+                  Buy <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </motion.a>
+          ))}
+        </div>
+        <p className="mt-5 text-center text-xs text-white/35 leading-relaxed max-w-2xl mx-auto">
+          {AGENT_CREDIT_FX_NOTE}
+        </p>
+      </section>
+
       {/* ── Available Agents — use cases & capabilities ── */}
       <section aria-label="Available AI agents">
         <div className="text-center mb-10">
           <p className="text-xs uppercase tracking-[0.2em] text-white/30 font-medium mb-3">
-            Available Agents
+            Productica Teams
           </p>
           <h2 className="text-3xl md:text-4xl font-light tracking-tight text-white mb-3">
             Meet your <span className="font-semibold">team</span>
@@ -1551,9 +1536,9 @@ function AgentsPlatform() {
                 {hasEstimate && (
                   <>
                     {needsUltraPlanner && (
-                      <div className="flex justify-between items-center text-sm">
+                      <div className="flex justify-between items-center text-sm gap-3">
                         <span className="text-white/50">UltraPlanner Agent</span>
-                        <span className="text-white/80 font-medium tabular-nums">${ultraPlannerPrice.toFixed(2)}</span>
+                        <span className="text-white/80 font-medium tabular-nums text-right">{formatUltraPlannerFee()}</span>
                       </div>
                     )}
                     <div className="h-px bg-white/10 my-1" />
@@ -1607,7 +1592,7 @@ function AgentsPlatform() {
                 rel="noopener noreferrer"
                 className="mt-2 flex w-full items-center justify-center gap-2 px-5 py-3 rounded-xl border border-white/15 text-white/60 text-sm font-medium hover:text-white hover:border-white/30 active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white/40 outline-none"
               >
-                Explore Agents
+                Explore Productica Teams
               </a>
             </motion.div>
           </div>
@@ -1655,7 +1640,7 @@ function AgentsPlatform() {
 type PlatformTab = 'dashboard' | 'agents';
 
 export default function PricingPage() {
-  const [activeTab, setActiveTab] = useState<PlatformTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<PlatformTab>('agents');
 
   const handleBackClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -1680,7 +1665,7 @@ export default function PricingPage() {
             aria-label="Platform selection"
             className="inline-flex items-center gap-1 p-1 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl"
           >
-            {(['dashboard', 'agents'] as PlatformTab[]).map(tab => (
+            {(['agents', 'dashboard'] as PlatformTab[]).map(tab => (
               <button
                 key={tab}
                 role="tab"
@@ -1698,7 +1683,7 @@ export default function PricingPage() {
                   />
                 )}
                 <span className="relative z-10">
-                  {tab === 'dashboard' ? 'Dashboard Platform' : 'Agents Platform'}
+                  {tab === 'agents' ? 'Productica Teams' : 'Productica One'}
                 </span>
               </button>
             ))}
@@ -1707,10 +1692,10 @@ export default function PricingPage() {
 
         {/* ── Tab Content ── */}
         <AnimatePresence mode="wait">
-          {activeTab === 'dashboard' ? (
-            <DashboardPlatform key="dashboard" />
-          ) : (
+          {activeTab === 'agents' ? (
             <AgentsPlatform key="agents" />
+          ) : (
+            <DashboardPlatform key="dashboard" />
           )}
         </AnimatePresence>
       </main>

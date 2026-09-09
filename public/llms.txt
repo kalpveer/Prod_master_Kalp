@@ -20,7 +20,8 @@ Productica is an AI-powered market intelligence platform designed to help founde
 
 ## Contact & Socials
 - Website: https://productica.in
-- Agents Platform: https://agents.productica.in
+- Productica Teams: https://agents.productica.in
+- Productica One: https://app.productica.in
 - Twitter/X: https://x.com/Productica_in
 - LinkedIn: https://linkedin.com/company/productica-ai/
 - Email: info@productica.in

@@ -124,6 +124,15 @@ const zigZagData = [
     icon: Target,
     image: '/our-story/Productica 2.0 - June 2026.jpeg',
     align: 'left'
+  },
+  {
+    id: 's14',
+    date: 'AUG 2026',
+    title: 'Productica 3.0',
+    description: 'A surrounding ecosystem of AI Employees and Investor-Graded Framework-based Reports for every aspiring founder.',
+    icon: Rocket,
+    image: '/our-story/Productica 3.0 - Aug 2026.jpg',
+    align: 'right'
   }
 ];
 
