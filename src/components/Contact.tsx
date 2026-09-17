@@ -169,7 +169,7 @@ export default function Contact() {
     setSending(true);
     
     try {
-      await fetch("https://discord.com/api/webhooks/1388762679199666248/OqjHayd_ah1j0a47couINsWL9fjIFl2y_2FQ2sQ7ovxhxdQPly_ElozcKejwp3lydCoJ", {
+      await fetch(import.meta.env.VITE_DISCORD_WEBHOOK_URL ?? "", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -64,7 +64,7 @@ export default function IdeaFlow() {
       } catch (e) { console.error("FP failed", e); }
 
       // Fire Discord notification (fire-and-forget) directly
-      fetch("https://discord.com/api/webhooks/1388762679199666248/OqjHayd_ah1j0a47couINsWL9fjIFl2y_2FQ2sQ7ovxhxdQPly_ElozcKejwp3lydCoJ", {
+      fetch(import.meta.env.VITE_DISCORD_WEBHOOK_URL ?? "", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

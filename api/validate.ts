@@ -1,5 +1,5 @@
 /* eslint-disable */
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1388762679199666248/OqjHayd_ah1j0a47couINsWL9fjIFl2y_2FQ2sQ7ovxhxdQPly_ElozcKejwp3lydCoJ";
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL ?? "";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
