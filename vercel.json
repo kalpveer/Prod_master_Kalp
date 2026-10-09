@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/nodoubt",
+      "destination": "https://app.productica.in/nodoubt",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!api/).*)",
