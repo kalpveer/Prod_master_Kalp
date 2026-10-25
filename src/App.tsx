@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -10,10 +10,14 @@ import Events from './pages/Events';
 import Blogs from './pages/Blogs';
 import AudiencePage from './pages/AudiencePage';
 import ComingSoon from './pages/ComingSoon';
+import { findModule } from './modules/registry';
 import PricingPage from './pages/PricingPage';
 import { audienceData, type AudienceSegment } from './data/audienceData';
 
 import CookieConsent from './components/CookieConsent';
+
+// App modules (/idea, ...) are code-split: the marketing site never loads them or Supabase.
+const ModuleHost = lazy(() => import('./modules/ModuleHost'));
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -260,6 +264,10 @@ function App() {
         <Events />
       ) : currentPath === '/blogs' ? (
         <Blogs />
+      ) : findModule(currentPath) ? (
+        <Suspense fallback={<div className="min-h-screen bg-black" />}>
+          <ModuleHost module={findModule(currentPath)!} />
+        </Suspense>
       ) : currentPath === '/coming-soon' ? (
         <ComingSoon />
       ) : currentPath === '/pricing' ? (
