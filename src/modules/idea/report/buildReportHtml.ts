@@ -285,14 +285,21 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 addEventListener('beforeprint',function(){q('header,section').forEach(function(x){x.classList.add('on')});q('.qx').forEach(function(x){x.classList.add('open')});q('details').forEach(function(x){x.open=true})});
 })();`;
 
-export function buildReportDocument(R, { theme } = {}) {
+export function buildReportDocument(R, { theme, grantsHref } = {}) {
   const { name, hero, body } = buildReportBody(R);
+  const grants = grantsHref ? `<section id="grants"><div class="wrap"><div class="soundboard-card eligible">
+<div class="sb-header"><span class="chip g">Next step</span><span style="font-size:12px;color:var(--mu);font-weight:600">Separate tool · also works on its own</span></div>
+<h3>See which grants fit this idea.</h3>
+<p style="font-size:14px;color:var(--tx);line-height:1.5">This report is sent into grant matching, so both tools stay on the same venture. You can also open /grants later on its own.</p>
+<a class="sb-btn" href="${E(grantsHref)}" target="_top">Check grants →</a>
+</div></div></section>` : '';
   return `<!doctype html><html lang="en"${theme ? ` data-theme="${theme}"` : ''}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${name} · Idea Validation Report | Productica</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <style>${reportCss}</style></head><body>
 <div class="top"><div><div class="brand-lockup"><b>Productica</b><span>Powered by Syncoro Ventures</span></div><span style="color:var(--mu);font-weight:600">${name} · Idea Validation Report</span></div><div id="pr"></div></div>
 ${hero}${body}
+${grants}
 <footer><div class="wrap"><b>Productica</b> <span style="opacity:.8;font-size:13px">· Powered by Syncoro Ventures</span><p>Prepared with AI-assisted research from public information. A decision aid, not investment, legal or financial advice. Scores, ratings and readiness checks are Productica's estimates until tested. Syncoro IQ, Productica Lens, and Venture Archetypes are proprietary decision-support methodologies.</p></div></footer>
 <script>${RUNTIME}</script></body></html>`;
 }

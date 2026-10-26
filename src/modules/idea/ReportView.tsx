@@ -3,6 +3,7 @@ import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import GeneratingScreen from './GeneratingScreen';
 import ReportFrame from './ReportFrame';
 import { ideaApi } from './ideaApi';
+import { writeWorkspace } from '../workspace';
 import { STALE_RUN_MS, type IdeaAnswers, type IdeaReport } from './types';
 
 interface Props {
@@ -51,6 +52,7 @@ export default function ReportView({ id, onBack, onRetry }: Props) {
         setReport(r);
         setNow(Date.now());
         setLoadError('');
+        if (r) writeWorkspace({ ideaId: r.id, venture: r.title || r.idea, stage: r.stage });
         if (r?.status === 'running') timer = setTimeout(load, POLL_MS);
       } catch (e) {
         if (!alive) return;
@@ -91,5 +93,5 @@ export default function ReportView({ id, onBack, onRetry }: Props) {
     return <Message title="We couldn’t finish this report" body={report.error || 'Please try again.'} onBack={onBack} action={{ label: 'Edit and try again', run: () => onRetry(answers) }} />;
   }
 
-  return <ReportFrame markdown={report.markdown} onBack={onBack} />;
+  return <ReportFrame markdown={report.markdown} grantsHref={`/grants?idea=${report.id}`} onBack={onBack} />;
 }

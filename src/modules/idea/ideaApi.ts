@@ -61,6 +61,26 @@ export const ideaApi = {
     await getSupabase().storage.from(BUCKET).remove([path]);
   },
 
+  /** Finished validations charged to this account. Deleting a report does not lower it. */
+  async quota(): Promise<{ used: number; limit: number }> {
+    const fromTable = await getSupabase()
+      .from('account_quotas')
+      .select('used, free_limit')
+      .eq('module', 'idea')
+      .maybeSingle();
+    if (!fromTable.error && fromTable.data) {
+      return { used: Number(fromTable.data.used) || 0, limit: Number(fromTable.data.free_limit) || 3 };
+    }
+
+    const { data } = await getSupabase().auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) throw new Error('Your session has expired. Please sign in again.');
+    const r = await fetch('/api/idea/generate', { headers: { Authorization: `Bearer ${token}` } });
+    const json = await r.json().catch(() => ({}));
+    if (!r.ok || typeof json.used !== 'number') throw new Error(json.error || 'Could not check your free validations.');
+    return { used: json.used as number, limit: Number(json.limit) || 3 };
+  },
+
   /** Starts a report. Resolves as soon as the server has accepted it; generation continues in the background. */
   async generate(answers: IdeaAnswers, deck?: UploadedDeck | null): Promise<{ id: string }> {
     const { data } = await getSupabase().auth.getSession();

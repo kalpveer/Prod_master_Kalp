@@ -1,7 +1,7 @@
 # App modules
 
 The marketing site (`/`, `/about`, `/pricing`, …) is public and unchanged. Everything app-like
-(`/idea` today, more later) is a **module**: a lazy-loaded page that sits behind email sign-in.
+(`/idea`, `/grants`, more later) is a **module**: a lazy-loaded page that sits behind email sign-in.
 
 ## How a module is wired
 
@@ -27,10 +27,12 @@ Module code is code-split, so the marketing site never downloads it or `@supabas
 
 ## Data conventions
 
-- One table per module, prefixed with the module name (`idea_reports`, `pitch_drafts`, …).
-- Every row has `user_id uuid references auth.users(id) on delete cascade`.
+- One table per module, prefixed with the module name (`idea_reports`, `grant_runs`, …).
+- Shared account counters live in `account_quotas` (`idea`, `grants`, …). `used` only goes up.
+- Every user-owned row has `user_id uuid references auth.users(id) on delete cascade`.
 - Row-level security **on**. Users get `SELECT` and `DELETE` on their own rows only.
 - **Writes go through the server** (service role), so users cannot forge results or skip limits. No client `INSERT`/`UPDATE` policies.
+- Database triggers enforce the idea free-validation cap. Deleting a row does not restore a slot.
 - Files go in a private storage bucket per module under `<user_id>/…`, with policies scoped to that folder.
 
 ## Long-running work (the `/idea` pattern)
@@ -47,7 +49,7 @@ See [`.env.example`](../.env.example). `SUPABASE_SERVICE_ROLE_KEY` and `PICKAXE_
 
 ## Supabase dashboard checklist
 
-- **Authentication → URL Configuration:** Site URL `https://productica.in`; Redirect URLs `https://productica.in/idea`, `http://localhost:5173/idea` (add each new module path or use `/**`).
+- **Authentication → URL Configuration:** Site URL `https://productica.in`; Redirect URLs `https://productica.in/idea`, `https://productica.in/grants`, `http://localhost:5173/idea`, `http://localhost:5173/grants` (or `/**`).
 - **Authentication → Email Templates → Magic Link:** include `{{ .Token }}` so the email also shows the 6-digit code the sign-in screen accepts.
 - **Authentication → SMTP:** use a custom SMTP provider before launch. The built-in sender is limited to a handful of emails per hour.
-- Run `supabase/migrations/0001_idea_module.sql` in the SQL editor.
+- Run `supabase/migrations/0001_idea_module.sql`, then `0002_quotas_and_grants.sql`, in the SQL editor.

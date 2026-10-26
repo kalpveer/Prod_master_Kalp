@@ -7,18 +7,6 @@ import * as THREE from 'three';
 // Defined as any to avoid strict Easing type conflicts with cubic-bezier arrays
 const ease: any = [0.16, 1, 0.3, 1];
 
-// Helper: scroll to a section ID via Lenis (falls back to native)
-const scrollToSection = (id: string) => {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const lenis = (window as any).lenis;
-  if (lenis && typeof lenis.scrollTo === 'function') {
-    lenis.scrollTo(el, { offset: -80, duration: 1.4 });
-  } else {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-};
-
 const blurUp = (delay = 0) => ({
   initial: { opacity: 0, filter: 'blur(14px)', y: 20 },
   animate: { opacity: 1, filter: 'blur(0px)', y: 0 },
@@ -246,8 +234,8 @@ export default function Hero({ onVideoLoad }: { onVideoLoad?: () => void }) {
           className="flex flex-col sm:flex-row items-center gap-3 mb-14"
         >
           {/* Primary Button */}
-          <button
-            onClick={() => scrollToSection('free-validation')}
+          <a
+            href="/idea"
             className="group flex flex-1 items-center justify-center gap-2.5 px-8 py-3.5 bg-white text-black text-[13px] font-medium rounded-full tracking-wide hover:bg-white/90 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-white/10 whitespace-nowrap cursor-pointer"
           >
             Validate Idea
@@ -259,7 +247,7 @@ export default function Hero({ onVideoLoad }: { onVideoLoad?: () => void }) {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
-          </button>
+          </a>
 
           {/* Secondary */}
           <a

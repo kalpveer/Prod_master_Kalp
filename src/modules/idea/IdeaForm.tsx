@@ -9,6 +9,8 @@ interface Props {
   initial?: Partial<IdeaAnswers>;
   busy: FormBusy;
   error: string;
+  /** Shown in place of the shortcut hint, and the form cannot be submitted. */
+  blocked?: string;
   onSubmit: (answers: IdeaAnswers, deck: File | null) => void;
 }
 
@@ -34,11 +36,11 @@ const underline =
   'w-full bg-transparent border-0 border-b border-white/25 focus:border-white/80 outline-none resize-none text-lg md:text-xl font-light leading-relaxed placeholder:text-white/20 py-2 transition-colors disabled:opacity-50';
 
 // All four questions and the optional pitch deck live in one window.
-export default function IdeaForm({ initial, busy, error, onSubmit }: Props) {
+export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Props) {
   const [a, setA] = useState<IdeaAnswers>({ idea: '', audience: '', different: '', stage: '', ...initial });
   const [deck, setDeck] = useState<File | null>(null);
   const [touched, setTouched] = useState(false);
-  const disabled = busy !== null;
+  const disabled = busy !== null || Boolean(blocked);
 
   const set = (k: keyof IdeaAnswers) => (v: string) => setA(p => ({ ...p, [k]: v }));
   const problems = {
@@ -51,7 +53,7 @@ export default function IdeaForm({ initial, busy, error, onSubmit }: Props) {
 
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
-    if (disabled) return;
+    if (disabled || blocked) return;
     if (!valid) return setTouched(true);
     onSubmit({ idea: a.idea.trim(), audience: a.audience.trim(), different: a.different.trim(), stage: a.stage }, deck);
   };
@@ -117,9 +119,13 @@ export default function IdeaForm({ initial, busy, error, onSubmit }: Props) {
           className="flex items-center gap-2 bg-white text-black text-sm font-semibold rounded-full px-8 py-3.5 hover:bg-white/90 active:scale-[0.97] transition-all disabled:opacity-40 disabled:pointer-events-none shadow-[0_0_20px_rgba(255,255,255,0.2)]"
         >
           {busy === 'uploading' ? 'Uploading your deck…' : busy === 'starting' ? 'Starting your report…' : 'Generate my report'}
-          {!busy && <ArrowRight size={16} />}
+          {!busy && !blocked && <ArrowRight size={16} />}
         </button>
-        <span className="text-[11px] font-mono text-white/30">or press <span className="text-white/50">Ctrl / ⌘ + Enter</span></span>
+        {blocked ? (
+          <span className="text-sm text-white/50 max-w-sm">{blocked}</span>
+        ) : (
+          <span className="text-[11px] font-mono text-white/30">or press <span className="text-white/50">Ctrl / ⌘ + Enter</span></span>
+        )}
       </div>
 
       {error && <p role="alert" className="text-sm text-red-500 -mt-4">{error}</p>}

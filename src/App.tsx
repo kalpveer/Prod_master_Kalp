@@ -115,137 +115,92 @@ function App() {
       return true;
     };
 
+    const go = (next: string) => {
+      window.history.pushState(null, '', next);
+      setCurrentPath(new URL(next, window.location.origin).pathname);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    };
+
     const handleGlobalClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const anchor = target.closest('a');
-      
-      if (anchor) {
-        const href = anchor.getAttribute('href') || '';
-        const text = anchor.textContent || '';
-        
-        // Save homepage scroll position before leaving (skip in-page hashes)
-        if (
-          currentPath === '/' &&
-          href !== '/' &&
-          !href.startsWith('/#') &&
-          !(href.startsWith('#') && href.length > 1)
-        ) {
-          sessionStorage.setItem('homeScrollY', window.scrollY.toString());
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const anchor = (e.target as HTMLElement).closest('a');
+      if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) return;
+
+      const href = anchor.getAttribute('href') || '';
+      if (!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return;
+      if (/^https?:\/\//i.test(href) && !href.startsWith(window.location.origin)) return;
+
+      const url = new URL(href, window.location.origin);
+      const path = url.pathname;
+      const hash = url.hash;
+      const next = `${path}${url.search}${hash}`;
+
+      if (
+        currentPath === '/' &&
+        path !== '/' &&
+        !href.startsWith('#')
+      ) {
+        sessionStorage.setItem('homeScrollY', window.scrollY.toString());
+      }
+
+      // Hash on this page stays here. Never bounce /idea#validate onto the marketing homepage.
+      if (href.startsWith('#') && href.length > 1) {
+        e.preventDefault();
+        if (href === '#home') {
+          go('/');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
         }
-        
-        const isTermsOrPrivacy = 
-          href.includes('terms') || 
-          href.includes('privacy') || 
-          href.includes('condition') ||
-          text.toLowerCase().includes('term') ||
-          text.toLowerCase().includes('condition') ||
-          text.toLowerCase().includes('privacy');
+        window.history.pushState(null, '', `${currentPath}${hash}`);
+        scrollToHash(hash);
+        return;
+      }
 
-        const isAbout = 
-          href.includes('about') ||
-          text.toLowerCase() === 'about';
+      const appModule = findModule(path);
+      if (appModule) {
+        e.preventDefault();
+        go(next);
+        if (!hash) window.scrollTo({ top: 0, behavior: 'instant' });
+        else setTimeout(() => scrollToHash(hash), 50);
+        return;
+      }
 
-        const isEvents = 
-          href.includes('events') ||
-          text.toLowerCase() === 'events';
+      const marketing: Record<string, string> = {
+        '/terms': '/terms',
+        '/privacy': '/terms',
+        '/about': '/about',
+        '/events': '/events',
+        '/blogs': '/blogs',
+        '/coming-soon': '/coming-soon',
+        '/pricing': '/pricing',
+      };
+      const audience = path.match(/^\/(founders|incubators|investors|researchers|universities)$/);
+      if (marketing[path] || audience) {
+        e.preventDefault();
+        go(marketing[path] || path);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        return;
+      }
 
-        const isBlogs = 
-          href.includes('blogs') ||
-          text.toLowerCase() === 'blogs' ||
-          text.toLowerCase() === 'blog';
-
-        const isComingSoon = href.includes('coming-soon');
-
-        const isPricing = href === '/pricing' || href.startsWith('/pricing');
-
-        const audienceMatch = href.match(/\/(founders|incubators|investors|researchers|universities)$/);
-
-        // In-page hash links (hero CTAs, etc.) — Lenis needs an explicit scrollTo
-        if (href.startsWith('#') && href.length > 1 && !href.startsWith('#home')) {
-          e.preventDefault();
-          if (currentPath !== '/') {
-            window.history.pushState(null, '', `/${href}`);
-            setCurrentPath('/');
-            setTimeout(() => {
-              window.history.replaceState(null, '', href);
-              scrollToHash(href);
-              [100, 300, 600].forEach((delay) => setTimeout(() => scrollToHash(href), delay));
-            }, 50);
-          } else {
-            window.history.pushState(null, '', href);
-            scrollToHash(href);
-          }
-        } else if (isTermsOrPrivacy) {
-          e.preventDefault();
-          window.history.pushState(null, '', '/terms');
-          setCurrentPath('/terms');
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        } else if (isAbout) {
-          e.preventDefault();
-          window.history.pushState(null, '', '/about');
-          setCurrentPath('/about');
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        } else if (isEvents) {
-          e.preventDefault();
-          window.history.pushState(null, '', '/events');
-          setCurrentPath('/events');
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        } else if (isBlogs) {
-          e.preventDefault();
-          window.history.pushState(null, '', '/blogs');
-          setCurrentPath('/blogs');
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        } else if (isComingSoon) {
-          e.preventDefault();
-          window.history.pushState(null, '', '/coming-soon');
-          setCurrentPath('/coming-soon');
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        } else if (isPricing) {
-          e.preventDefault();
-          window.history.pushState(null, '', '/pricing');
-          setCurrentPath('/pricing');
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        } else if (audienceMatch) {
-          e.preventDefault();
-          window.history.pushState(null, '', audienceMatch[0]);
-          setCurrentPath(audienceMatch[0]);
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        } else if (href === '/' || href === '#home' || href.startsWith('/#')) {
-          e.preventDefault();
-          
-          const isHashRoute = href.startsWith('/#');
-          const targetHash = isHashRoute ? href.slice(1) : href === '#home' ? '#home' : '';
-
-          if (currentPath !== '/') {
-            window.history.pushState(null, '', href);
-            setCurrentPath('/');
-            
-            setTimeout(() => {
-              const savedScroll = sessionStorage.getItem('homeScrollY');
-              
-              if (!targetHash && savedScroll) {
-                // If navigating back to Home without a specific hash, use exact pixel scroll
-                if ((window as any).lenis) {
-                  (window as any).lenis.scrollTo(parseInt(savedScroll, 10), { immediate: true });
-                } else {
-                  window.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'instant' });
-                }
-              } else if (targetHash && targetHash !== '#home') {
-                scrollToHash(targetHash);
-                [100, 300, 600, 1000].forEach((delay) => setTimeout(() => scrollToHash(targetHash), delay));
-              } else {
-                window.scrollTo({ top: 0, behavior: 'instant' });
-              }
-            }, 50);
-          } else {
-            window.history.pushState(null, '', href);
-            if (targetHash && targetHash !== '#home') {
-              scrollToHash(targetHash);
+      if (path === '/' && (href === '/' || href === '#home' || href.startsWith('/#'))) {
+        e.preventDefault();
+        const targetHash = href.startsWith('/#') ? href.slice(1) : href === '#home' ? '#home' : '';
+        go(href.startsWith('/#') ? href : '/');
+        setTimeout(() => {
+          const savedScroll = sessionStorage.getItem('homeScrollY');
+          if (!targetHash && currentPath !== '/' && savedScroll) {
+            if ((window as any).lenis) {
+              (window as any).lenis.scrollTo(parseInt(savedScroll, 10), { immediate: true });
             } else {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'instant' });
             }
+          } else if (targetHash && targetHash !== '#home') {
+            scrollToHash(targetHash);
+            [100, 300, 600, 1000].forEach((delay) => setTimeout(() => scrollToHash(targetHash), delay));
+          } else {
+            window.scrollTo({ top: 0, behavior: currentPath === '/' ? 'smooth' : 'instant' });
           }
-        }
+        }, 50);
       }
     };
 

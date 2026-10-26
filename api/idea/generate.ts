@@ -12,9 +12,12 @@ import { waitUntil } from '@vercel/functions';
 import { requireUser } from '../_lib/auth.js';
 import { ConfigError, getAdmin } from '../_lib/supabaseAdmin.js';
 import { extractDeckText } from '../_lib/deckText.js';
+import { isQuotaError, readQuota } from '../_lib/quotas.js';
+import { completePickaxe, PickaxeError } from '../_lib/pickaxe.js';
 
-const PICKAXE_URL = process.env.PICKAXE_API_URL || 'https://api.pickaxe.co/v1/completions';
 const DAILY_LIMIT = Math.max(1, Number(process.env.IDEA_DAILY_LIMIT) || 5);
+// Lifetime free reports per account. Keep in sync with FREE_IDEA_LIMIT in src/modules/idea/types.ts.
+const FREE_LIMIT = 3;
 const STALE_MS = 7 * 60 * 1000;
 const PICKAXE_TIMEOUT_MS = 280_000;
 const BUCKET = 'pitch-decks';
@@ -25,12 +28,22 @@ const safeJson = (s: string) => { try { return JSON.parse(s); } catch { return n
 
 class UserFacingError extends Error {}
 
+async function accountValidationsUsed(admin: ReturnType<typeof getAdmin>, userId: string): Promise<{ used: number; limit: number }> {
+  return readQuota(admin, userId, 'idea');
+}
+
 export default async function handler(req: any, res: any) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST' && req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
     const user = await requireUser(req);
     if (!user) return res.status(401).json({ error: 'Please sign in to continue.' });
+
+    const admin = getAdmin();
+    if (req.method === 'GET') {
+      const quota = await accountValidationsUsed(admin, user.id);
+      return res.status(200).json({ used: quota.used, limit: quota.limit || FREE_LIMIT });
+    }
 
     const body = typeof req.body === 'string' ? safeJson(req.body) || {} : req.body || {};
     const idea = clean(body.idea, 4000);
@@ -48,8 +61,6 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'That pitch deck upload is not valid.' });
     }
 
-    const admin = getAdmin();
-
     // Runs that never finished (function killed, etc.) must not block the user forever.
     const staleBefore = new Date(Date.now() - STALE_MS).toISOString();
     await admin
@@ -62,6 +73,13 @@ export default async function handler(req: any, res: any) {
     const { count: running } = await admin
       .from('idea_reports').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'running');
     if ((running ?? 0) > 0) return res.status(409).json({ error: 'You already have a report generating. Wait for it to finish.' });
+
+    // Lifetime cap. Stored on the account, so deleting a report does not give the slot back.
+    // A failed run is not counted. A finished one is.
+    const quota = await accountValidationsUsed(admin, user.id);
+    if (quota.used >= quota.limit) {
+      return res.status(429).json({ error: `You've used your ${quota.limit} free validations on this account.` });
+    }
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count: recent } = await admin
@@ -79,6 +97,9 @@ export default async function handler(req: any, res: any) {
       .select('id')
       .single();
     if (insertError || !row) {
+      if (isQuotaError(insertError)) {
+        return res.status(429).json({ error: `You've used your ${FREE_LIMIT} free validations on this account.` });
+      }
       console.error('[idea/generate] insert failed', insertError?.message);
       return res.status(500).json({ error: 'Could not start your report. Please try again.' });
     }
@@ -107,7 +128,9 @@ async function runReport(
   const admin = getAdmin();
   const finish = async (patch: Record<string, unknown>) => {
     const { error } = await admin.from('idea_reports').update({ ...patch, completed_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
-    if (error) console.error('[idea/generate] could not save result', id, error.message);
+    if (error) {
+      console.error('[idea/generate] could not save result', id, error.message);
+    }
   };
 
   try {
@@ -130,40 +153,15 @@ async function runReport(
       deckText ? `\nPitch deck provided by the founder (text extracted from "${a.deckName}"; treat it as founder-stated claims, not verified evidence):\n${deckText}` : '',
     ].filter(Boolean).join('\n');
 
-    const markdown = await callPickaxe(message, userId);
+    const markdown = await completePickaxe(process.env.PICKAXE_DEPLOYMENT_ID, message, userId, PICKAXE_TIMEOUT_MS);
     const meta = readMeta(markdown);
     await finish({ status: 'done', markdown, title: meta.title, verdict: meta.verdict, iq: meta.iq, error: null });
   } catch (e: any) {
     console.error('[idea/generate] run failed', id, e?.message);
-    await finish({ status: 'failed', error: e instanceof UserFacingError ? e.message : 'The report could not be completed. Please try again.' });
-  }
-}
-
-async function callPickaxe(message: string, userId: string): Promise<string> {
-  const token = process.env.PICKAXE_DEPLOYMENT_ID;
-  if (!token) throw new UserFacingError('The report engine is not configured.');
-
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), PICKAXE_TIMEOUT_MS);
-  try {
-    const r = await fetch(PICKAXE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ message, userId }),
-      signal: ctrl.signal,
-    });
-    const text = await r.text();
-    const json = safeJson(text);
-    if (!r.ok || !json || json.success === false || typeof json.result !== 'string' || !json.result.trim()) {
-      console.error('[idea/generate] pickaxe error', r.status, text.slice(0, 500));
-      throw new UserFacingError('The report engine could not complete this run. Please try again.');
-    }
-    return json.result;
-  } catch (e: any) {
-    if (e?.name === 'AbortError') throw new UserFacingError('The report took too long. Please try again.');
-    throw e;
-  } finally {
-    clearTimeout(timer);
+    const message = e instanceof UserFacingError || e instanceof PickaxeError
+      ? e.message
+      : 'The report could not be completed. Please try again.';
+    await finish({ status: 'failed', error: message });
   }
 }
 

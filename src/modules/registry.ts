@@ -21,6 +21,12 @@ export const modules: AppModule[] = [
     requiresAuth: true,
     load: () => import('./idea/IdeaModule'),
   },
+  {
+    path: '/grants',
+    title: 'Grant matching',
+    requiresAuth: true,
+    load: () => import('./grants/GrantsModule'),
+  },
 ];
 
 export const findModule = (pathname: string) =>
