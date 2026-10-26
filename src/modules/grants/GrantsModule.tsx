@@ -26,7 +26,7 @@ const ideaFromUrl = () => new URLSearchParams(window.location.search).get('idea'
 const empty: GrantInput = { stage: '', sector: '', state: '', applicant: '', venture: '' };
 
 export default function GrantsModule() {
-  const { user, signOut } = useAuth();
+  const { displayName, signOut } = useAuth();
   const [ideas, setIdeas] = useState<IdeaReportSummary[] | null>(null);
   const [sourceId, setSourceId] = useState<string | null>(ideaFromUrl);
   const [input, setInput] = useState<GrantInput>(empty);
@@ -180,7 +180,7 @@ export default function GrantsModule() {
         />
       )}
 
-      <ToolChrome active="grants" email={user?.email} onSignOut={() => void signOut()}>
+      <ToolChrome active="grants" account={displayName} onSignOut={() => void signOut()}>
         <a href="#match" className="text-white/40 hover:text-white transition-colors">New match</a>
       </ToolChrome>
 

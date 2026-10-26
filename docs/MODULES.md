@@ -1,14 +1,14 @@
 # App modules
 
 The marketing site (`/`, `/about`, `/pricing`, …) is public and unchanged. Everything app-like
-(`/idea`, `/grants`, more later) is a **module**: a lazy-loaded page that sits behind email sign-in.
+(`/idea`, `/grants`, more later) is a **module**: a lazy-loaded page that sits behind username + email + password sign-in.
 
 ## How a module is wired
 
 | Piece | Where |
 |---|---|
 | Route + auth requirement | one entry in [`src/modules/registry.ts`](../src/modules/registry.ts) |
-| Auth (Supabase email sign-in) | handled by [`ModuleHost`](../src/modules/ModuleHost.tsx); the module just calls `useAuth()` |
+| Auth (Supabase password sign-in) | handled by [`ModuleHost`](../src/modules/ModuleHost.tsx); the module just calls `useAuth()` |
 | Page code | `src/modules/<name>/<Name>Module.tsx` (default export) |
 | Server work | `api/<name>/*.ts` (Vercel functions), shared helpers in `api/_lib/` |
 | Data | `supabase/migrations/NNNN_<name>.sql` |
@@ -49,7 +49,7 @@ See [`.env.example`](../.env.example). `SUPABASE_SERVICE_ROLE_KEY` and `PICKAXE_
 
 ## Supabase dashboard checklist
 
-- **Authentication → URL Configuration:** Site URL `https://productica.in`; Redirect URLs `https://productica.in/idea`, `https://productica.in/grants`, `http://localhost:5173/idea`, `http://localhost:5173/grants` (or `/**`).
-- **Authentication → Email Templates → Magic Link:** include `{{ .Token }}` so the email also shows the 6-digit code the sign-in screen accepts.
-- **Authentication → SMTP:** use a custom SMTP provider before launch. The built-in sender is limited to a handful of emails per hour.
-- Run `supabase/migrations/0001_idea_module.sql`, then `0002_quotas_and_grants.sql`, in the SQL editor.
+- **Authentication → URL Configuration:** Site URL must be the live Vercel URL (never `http://localhost:5173`). Redirect URLs: `http://localhost:5173/**`, `https://*.vercel.app/**`, `https://productica.in/**`.
+- **Authentication → Providers → Email:** enable Email, allow sign-ups, turn **Confirm email OFF**. Sign-in is username / email + password. Do not use magic links.
+- **Authentication → SMTP:** use a custom SMTP provider before launch if you want password-reset emails. The built-in sender is limited to a handful of emails per hour.
+- Run `0001_idea_module.sql`, then `0002_quotas_and_grants.sql`, then `0003_password_auth.sql`, in the SQL editor.

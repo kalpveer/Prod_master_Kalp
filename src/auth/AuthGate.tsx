@@ -4,7 +4,7 @@ import LoginScreen from './LoginScreen';
 
 // Renders children only for signed-in users. Wrap any page that needs an account.
 export default function AuthGate({ title, children }: { title: string; children: ReactNode }) {
-  const { configured, loading, session } = useAuth();
+  const { configured, loading, session, passwordRecovery } = useAuth();
 
   if (!configured) {
     return (
@@ -29,5 +29,6 @@ export default function AuthGate({ title, children }: { title: string; children:
     );
   }
 
-  return session ? <>{children}</> : <LoginScreen title={title} />;
+  if (!session || passwordRecovery) return <LoginScreen title={title} />;
+  return <>{children}</>;
 }

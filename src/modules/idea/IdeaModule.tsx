@@ -28,7 +28,7 @@ const STEPS = [
 ];
 
 export default function IdeaModule() {
-  const { user, signOut } = useAuth();
+  const { user, displayName, signOut } = useAuth();
   const [reports, setReports] = useState<IdeaReportSummary[] | null>(null);
   const [usedFree, setUsedFree] = useState<number | null>(null);
   const [listError, setListError] = useState('');
@@ -160,7 +160,7 @@ export default function IdeaModule() {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
-      <ToolChrome active="idea" email={user?.email} onSignOut={() => void signOut()}>
+      <ToolChrome active="idea" account={displayName} onSignOut={() => void signOut()}>
         <a href="#validate" className="text-white/40 hover:text-white transition-colors">New validation</a>
         <a href="#history" className="text-white/40 hover:text-white transition-colors">History</a>
       </ToolChrome>
@@ -272,29 +272,43 @@ export default function IdeaModule() {
 }
 
 function Allowance({ used }: { used: number | null }) {
-  const filled = used === null ? 0 : Math.min(used, FREE_IDEA_LIMIT);
+  const spent = used === null ? 0 : Math.min(used, FREE_IDEA_LIMIT);
   const remaining = used === null ? null : Math.max(0, FREE_IDEA_LIMIT - used);
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-5">
-      <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Free validations left</p>
+      <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Free validations</p>
       <p className="mt-2 text-3xl font-light tracking-tight">
         {remaining === null ? (
           <span className="text-white/35 text-xl">Checking your account…</span>
         ) : (
           <>
             <span className="font-semibold">{remaining}</span>
-            <span className="text-white/35"> / {FREE_IDEA_LIMIT}</span>
+            <span className="text-white/45"> left</span>
           </>
         )}
       </p>
-      <div className="mt-4 flex items-center gap-2" aria-label={remaining === null ? 'Loading remaining validations' : `${remaining} of ${FREE_IDEA_LIMIT} free validations left`}>
-        {Array.from({ length: FREE_IDEA_LIMIT }, (_, i) => (
-          <span key={i} className="grid flex-1 gap-1.5">
-            <span className={`block h-1.5 rounded-full ${i < filled ? 'bg-white' : 'bg-white/15'}`} />
-            <span className="text-[10px] font-mono text-white/30">{String(i + 1).padStart(2, '0')}</span>
-          </span>
-        ))}
+      {used !== null && (
+        <p className="mt-1 text-sm text-white/40">
+          {used === 0
+            ? `None used yet · ${FREE_IDEA_LIMIT} free on this account`
+            : `${used} used · ${FREE_IDEA_LIMIT} free on this account`}
+        </p>
+      )}
+      <div
+        className="mt-4 flex items-center gap-2"
+        aria-label={remaining === null ? 'Loading remaining validations' : `${remaining} left, ${spent} used of ${FREE_IDEA_LIMIT}`}
+      >
+        {Array.from({ length: FREE_IDEA_LIMIT }, (_, i) => {
+          const taken = i < spent;
+          return (
+            <span
+              key={i}
+              className={`block h-1.5 flex-1 rounded-full ${taken ? 'bg-white/20' : 'bg-white'}`}
+              title={taken ? 'Used' : 'Available'}
+            />
+          );
+        })}
       </div>
     </div>
   );

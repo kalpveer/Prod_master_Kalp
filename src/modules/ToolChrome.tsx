@@ -3,7 +3,7 @@ import { LogOut } from 'lucide-react';
 
 interface Props {
   active: 'idea' | 'grants';
-  email?: string | null;
+  account?: string | null;
   onSignOut: () => void;
   children?: ReactNode;
 }
@@ -11,7 +11,7 @@ interface Props {
 const link = (on: boolean) =>
   `hover:text-white transition-colors ${on ? 'text-white' : 'text-white/40'}`;
 
-export default function ToolChrome({ active, email, onSignOut, children }: Props) {
+export default function ToolChrome({ active, account, onSignOut, children }: Props) {
   return (
     <header className="flex items-center justify-between gap-4 px-6 md:px-12 py-6 border-b border-white/10">
       <div className="flex items-center gap-8 min-w-0">
@@ -23,7 +23,7 @@ export default function ToolChrome({ active, email, onSignOut, children }: Props
         </nav>
       </div>
       <div className="flex items-center gap-4 min-w-0">
-        <span className="hidden sm:block text-xs text-white/40 truncate">{email}</span>
+        <span className="hidden sm:block text-xs text-white/40 truncate">{account}</span>
         <button onClick={onSignOut} className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-white/40 hover:text-white transition-colors">
           <LogOut size={14} /> Sign out
         </button>
