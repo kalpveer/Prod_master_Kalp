@@ -1,8 +1,9 @@
-import { useState, type FormEvent } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { useEffect, useState, type FormEvent } from 'react';
+import { ArrowRight, Eye, EyeOff, Moon, Sun } from 'lucide-react';
 import { getSupabase } from '../lib/supabase';
+import { useVentureTheme } from '../modules/venture/theme';
 import { useAuth } from './useAuth';
-import { normalizeUsername, validatePassword, validateUsername } from './redirect';
+import { normalizePhone, normalizeUsername, validatePassword, validatePhone, validateUsername } from './redirect';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
@@ -18,14 +19,29 @@ function Field({
   autoFocus?: boolean;
   placeholder?: string;
 }) {
+  const [shown, setShown] = useState(false);
+  const secret = type === 'password';
   return (
-    <div className="mt-8 first:mt-10">
-      <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-white/40 mb-2" htmlFor={id}>{label}</label>
-      <input
-        id={id} type={type} autoComplete={autoComplete} autoFocus={autoFocus} required value={value}
-        onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-transparent border-0 border-b border-white/30 focus:border-white/80 outline-none text-xl font-light placeholder:text-white/20 py-3 transition-colors"
-      />
+    <div className="mt-3 first:mt-4">
+      <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-white/40 mb-1" htmlFor={id}>{label}</label>
+      <div className="relative">
+        <input
+          id={id} type={secret && shown ? 'text' : type} autoComplete={autoComplete} autoFocus={autoFocus} required value={value}
+          onChange={e => onChange(e.target.value)} placeholder={placeholder}
+          className={`w-full bg-transparent border-0 border-b border-white/30 focus:border-white/80 outline-none text-lg font-light placeholder:text-white/20 py-1.5 transition-colors ${secret ? 'pr-10' : ''}`}
+        />
+        {secret && (
+          <button
+            type="button"
+            onClick={() => setShown(v => !v)}
+            aria-label={shown ? 'Hide password' : 'Show password'}
+            aria-pressed={shown}
+            className="absolute right-0 bottom-1.5 text-white/40 hover:text-white transition-colors"
+          >
+            {shown ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -37,9 +53,11 @@ const isCredentialFail = (message: string) => {
 
 export default function LoginScreen({ title }: { title: string }) {
   const { signIn, signUp, requestPasswordReset, updatePassword, passwordRecovery } = useAuth();
+  const { theme, toggle } = useVentureTheme();
   const [mode, setMode] = useState<Mode>('signin');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -105,7 +123,9 @@ export default function LoginScreen({ title }: { title: string }) {
     }
 
     setBusy(false);
-    const missing = id.includes('@') ? 'Add a username and confirm your password to create the account.' : 'Add your email and confirm your password to create the account.';
+    const missing = id.includes('@')
+      ? 'Add a username, your phone number, and confirm the password.'
+      : 'Add your email, your phone number, and confirm the password.';
     toSignUp(id, `No account yet. We kept what you typed. ${missing}`);
   };
 
@@ -117,9 +137,11 @@ export default function LoginScreen({ title }: { title: string }) {
     const passErr = validatePassword(password);
     if (passErr) return setError(passErr);
     if (password !== confirm) return setError('Passwords do not match.');
+    const phoneErr = validatePhone(phone);
+    if (phoneErr) return setError(phoneErr);
     setBusy(true);
     setError('');
-    const err = await signUp({ username, email, password });
+    const err = await signUp({ username, email, password, phone });
     setBusy(false);
     if (err) {
       if (err.toLowerCase().includes('already')) {
@@ -168,12 +190,11 @@ export default function LoginScreen({ title }: { title: string }) {
 
   const needUsername = !username.trim();
   const needEmail = !email.includes('@');
+  const needPhone = !normalizePhone(phone);
   const needConfirm = !confirm;
-  const signupCopy = needUsername
-    ? 'We kept your email and password. Add a username and confirm the password.'
-    : needEmail
-      ? 'We kept your username and password. Add your email and confirm the password.'
-      : 'Confirm the password, then create the account.';
+  const signupCopy = notice
+    ? 'We kept what you already typed. Fill the rest, including your phone number. It is saved on the account and is not used to sign in.'
+    : 'Username, email, password, and a phone number. The number is saved on your account. Sign-in stays username or email.';
 
   const heading = passwordRecovery
     ? <>Set a <span className="font-semibold">new password.</span></>
@@ -188,35 +209,64 @@ export default function LoginScreen({ title }: { title: string }) {
   const copy = passwordRecovery
     ? 'Choose a new password for this account. You will stay signed in after it is saved.'
     : mode === 'signup'
-      ? (notice ? signupCopy : 'Username, email, and a password. Your reports stay on this account.')
+      ? signupCopy
       : mode === 'forgot'
         ? 'Enter the email on your account. We will send a reset link to this same site — not to localhost.'
-        : 'Use your username or email, and your password. New here? Sign in anyway — we will move you to create an account.';
+        : '';
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const prevHtml = root.style.overflow;
+    const prevBody = document.body.style.overflow;
+    root.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    const lenis = (window as unknown as { lenis?: { stop: () => void; start: () => void } }).lenis;
+    lenis?.stop();
+    return () => {
+      root.style.overflow = prevHtml;
+      document.body.style.overflow = prevBody;
+      lenis?.start();
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col selection:bg-white selection:text-black">
-      <header className="flex items-center justify-between px-6 md:px-12 py-6">
-        <a href="/" className="text-lg font-semibold tracking-tight">Productica</a>
-        <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">{title}</span>
+    <div className="h-dvh overflow-hidden bg-black text-white flex flex-col selection:bg-white selection:text-black relative">
+      <div className="vl-auth-glow" style={{ width: 460, height: 460, top: -140, left: -120, background: '#d9d3c4', opacity: 0.55 }} />
+      <div className="vl-auth-glow" style={{ width: 380, height: 380, right: -120, bottom: -80, background: '#8ea0ae', opacity: 0.4 }} />
+      <header className="relative z-10 shrink-0 flex items-center justify-between gap-4 px-6 md:px-12 py-4">
+        <a href="/" className="leading-none">
+          <span className="block text-[10px] font-mono uppercase tracking-[0.22em] text-white/40">Productica</span>
+          <span className="block text-base font-semibold tracking-tight">VentureLab</span>
+        </a>
+        <div className="flex items-center gap-3">
+          <nav className="hidden sm:flex items-center gap-3 text-sm text-white/50">
+            <a href="/idea" className="hover:text-white">Validate</a>
+            <a href="/grants" className="hover:text-white">Grants</a>
+          </nav>
+          <button type="button" onClick={toggle} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center text-white/70 hover:text-white">
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+          <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">{title}</span>
+        </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-6 pb-24">
-        <div className="w-full max-w-md">
+      <main className="relative z-10 min-h-0 flex-1 flex items-center justify-center px-6 py-3">
+        <div className="vl-glass w-full max-w-md rounded-3xl px-6 py-4 md:px-8 md:py-5">
           {!passwordRecovery && (
-            <div className="flex items-center gap-6 mb-8 text-[10px] font-mono uppercase tracking-[0.25em]">
+            <div className="flex items-center gap-6 mb-4 text-[10px] font-mono uppercase tracking-[0.25em]">
               <button type="button" onClick={toSignIn} className={mode === 'signin' ? 'text-white' : 'text-white/35 hover:text-white'}>Sign in</button>
               <button type="button" onClick={() => toSignUp(identifier || email || username, '')} className={mode === 'signup' ? 'text-white' : 'text-white/35 hover:text-white'}>Create account</button>
             </div>
           )}
 
-          <h1 className="text-4xl md:text-5xl font-light tracking-tighter leading-[1.02]">{heading}</h1>
-          <p className="mt-4 text-sm md:text-base text-white/50">{copy}</p>
+          <h1 className="text-3xl md:text-4xl font-light tracking-tighter leading-[1.02]">{heading}</h1>
+          {copy && <p className="mt-2 text-sm text-white/50">{copy}</p>}
 
           {passwordRecovery ? (
             <form onSubmit={onRecovery}>
               <Field id="new-password" label="New password" type="password" autoComplete="new-password" autoFocus value={nextPassword} onChange={setNextPassword} placeholder="At least 8 characters" />
               <Field id="new-password-confirm" label="Confirm password" type="password" autoComplete="new-password" value={confirm} onChange={setConfirm} />
-              <button type="submit" disabled={busy || nextPassword.length < 8} className="mt-8 flex items-center gap-2 bg-white text-black text-sm font-semibold rounded-full px-8 py-3.5 hover:bg-white/90 active:scale-[0.97] transition-all disabled:opacity-30 disabled:pointer-events-none">
+              <button type="submit" disabled={busy || nextPassword.length < 8} className="mt-5 flex items-center gap-2 bg-white text-black text-sm font-semibold rounded-full px-8 py-3 hover:bg-white/90 active:scale-[0.97] transition-all disabled:opacity-30 disabled:pointer-events-none">
                 {busy ? 'Saving…' : 'Save password'} <ArrowRight size={16} />
               </button>
             </form>
@@ -224,16 +274,17 @@ export default function LoginScreen({ title }: { title: string }) {
             <form onSubmit={onSignUp}>
               <Field id="signup-username" label="Username" type="text" autoComplete="username" autoFocus={needUsername} value={username} onChange={setUsername} placeholder="yourname" />
               <Field id="signup-email" label="Email" type="email" autoComplete="email" autoFocus={!needUsername && needEmail} value={email} onChange={setEmail} placeholder="you@company.com" />
+              <Field id="signup-phone" label="Phone number" type="tel" autoComplete="tel" autoFocus={!needUsername && !needEmail && needPhone} value={phone} onChange={setPhone} placeholder="98765 43210" />
               <Field id="signup-password" label="Password" type="password" autoComplete="new-password" value={password} onChange={setPassword} placeholder="Letter + number, 8+ characters" />
-              <Field id="signup-confirm" label="Confirm password" type="password" autoComplete="new-password" autoFocus={!needUsername && !needEmail && needConfirm} value={confirm} onChange={setConfirm} />
-              <button type="submit" disabled={busy || !email.includes('@') || !username || password.length < 8 || !confirm} className="mt-8 flex items-center gap-2 bg-white text-black text-sm font-semibold rounded-full px-8 py-3.5 hover:bg-white/90 active:scale-[0.97] transition-all disabled:opacity-30 disabled:pointer-events-none">
+              <Field id="signup-confirm" label="Confirm password" type="password" autoComplete="new-password" autoFocus={!needUsername && !needEmail && !needPhone && needConfirm} value={confirm} onChange={setConfirm} />
+              <button type="submit" disabled={busy || !email.includes('@') || !username || password.length < 8 || !confirm || needPhone} className="mt-5 flex items-center gap-2 bg-white text-black text-sm font-semibold rounded-full px-8 py-3 hover:bg-white/90 active:scale-[0.97] transition-all disabled:opacity-30 disabled:pointer-events-none">
                 {busy ? 'Creating…' : 'Create account'} <ArrowRight size={16} />
               </button>
             </form>
           ) : mode === 'forgot' ? (
             <form onSubmit={onForgot}>
               <Field id="forgot-email" label="Email" type="email" autoComplete="email" autoFocus value={email} onChange={setEmail} placeholder="you@company.com" />
-              <button type="submit" disabled={busy || !email.includes('@')} className="mt-8 flex items-center gap-2 bg-white text-black text-sm font-semibold rounded-full px-8 py-3.5 hover:bg-white/90 active:scale-[0.97] transition-all disabled:opacity-30 disabled:pointer-events-none">
+              <button type="submit" disabled={busy || !email.includes('@')} className="mt-5 flex items-center gap-2 bg-white text-black text-sm font-semibold rounded-full px-8 py-3 hover:bg-white/90 active:scale-[0.97] transition-all disabled:opacity-30 disabled:pointer-events-none">
                 {busy ? 'Sending…' : 'Send reset link'} <ArrowRight size={16} />
               </button>
               <button type="button" onClick={toSignIn} className="mt-6 text-xs text-white/40 hover:text-white transition-colors">Back to sign in</button>
@@ -242,8 +293,8 @@ export default function LoginScreen({ title }: { title: string }) {
             <form onSubmit={onSignIn}>
               <Field id="login-id" label="Username or email" type="text" autoComplete="username" autoFocus value={identifier} onChange={setIdentifier} placeholder="yourname or you@company.com" />
               <Field id="login-password" label="Password" type="password" autoComplete="current-password" value={password} onChange={setPassword} />
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <button type="submit" disabled={busy || !identifier || !password} className="flex items-center gap-2 bg-white text-black text-sm font-semibold rounded-full px-8 py-3.5 hover:bg-white/90 active:scale-[0.97] transition-all disabled:opacity-30 disabled:pointer-events-none">
+              <div className="mt-5 flex flex-wrap items-center gap-4">
+                <button type="submit" disabled={busy || !identifier || !password} className="flex items-center gap-2 bg-white text-black text-sm font-semibold rounded-full px-8 py-3 hover:bg-white/90 active:scale-[0.97] transition-all disabled:opacity-30 disabled:pointer-events-none">
                   {busy ? 'Signing in…' : 'Sign in'} <ArrowRight size={16} />
                 </button>
                 <button type="button" onClick={() => { applyIdentifier(identifier); setMode('forgot'); setError(''); setNotice(''); }} className="text-xs font-mono uppercase tracking-widest text-white/50 hover:text-white transition-colors">

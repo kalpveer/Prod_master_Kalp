@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import type { Session } from '@supabase/supabase-js';
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 import { AuthContext, accountLabel, type AuthContextValue, type SignUpInput } from './useAuth';
-import { authRedirectTo, normalizeUsername, validatePassword, validateUsername } from './redirect';
+import { authRedirectTo, normalizePhone, normalizeUsername, validatePassword, validatePhone, validateUsername } from './redirect';
 
 const friendly = (message: string) => {
   const m = message.toLowerCase();
@@ -69,13 +69,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const signUp = useCallback(async ({ username, email, password }: SignUpInput) => {
+  const signUp = useCallback(async ({ username, email, password, phone }: SignUpInput) => {
     const nameErr = validateUsername(username);
     if (nameErr) return nameErr;
     const passErr = validatePassword(password);
     if (passErr) return passErr;
+    const phoneErr = validatePhone(phone);
+    if (phoneErr) return phoneErr;
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = normalizeUsername(username);
+    const cleanPhone = normalizePhone(phone)!;
 
     try {
       const check = await fetch('/api/verify-email', {
@@ -94,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: cleanEmail,
         password,
         options: {
-          data: { username: cleanName },
+          data: { username: cleanName, phone: cleanPhone },
           emailRedirectTo: authRedirectTo(),
         },
       });
@@ -103,7 +106,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return 'Account created. If you received a confirmation email, open it on this same device, then sign in.';
       }
       if (data.user) {
-        await getSupabase().from('profiles').update({ username: cleanName }).eq('id', data.user.id);
+        const { error: profileError } = await getSupabase()
+          .from('profiles')
+          .update({ username: cleanName, phone: cleanPhone })
+          .eq('id', data.user.id);
+        if (profileError) console.warn('[signup] profile phone was not saved', profileError.message);
       }
       return null;
     } catch (e) {

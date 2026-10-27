@@ -4,7 +4,13 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: '#E1E0CC',
+        },
+      },
+    },
   },
   plugins: [
     require('@tailwindcss/typography'),

@@ -2,7 +2,7 @@ import { getSupabase } from '../../lib/supabase';
 import { DECK_MAX_BYTES, type IdeaAnswers, type IdeaReport, type IdeaReportSummary } from './types';
 
 const BUCKET = 'pitch-decks';
-const SUMMARY_COLUMNS = 'id,created_at,status,title,verdict,iq,stage,idea,deck_name,error';
+const SUMMARY_COLUMNS = 'id,created_at,status,title,verdict,iq,stage,startup_name,idea,deck_name,error';
 
 const DECK_TYPES: Record<string, string> = {
   pdf: 'application/pdf',

@@ -14,7 +14,7 @@ interface Props {
   onSubmit: (answers: IdeaAnswers, deck: File | null) => void;
 }
 
-const MIN = { idea: 20, audience: 3, different: 5 } as const;
+const MIN = { startupName: 2, idea: 20, audience: 3, different: 5 } as const;
 
 function Field({ n, label, hint, optional, children }: { n: string; label: string; hint: string; optional?: boolean; children: ReactNode }) {
   return (
@@ -35,15 +35,16 @@ function Field({ n, label, hint, optional, children }: { n: string; label: strin
 const underline =
   'w-full bg-transparent border-0 border-b border-white/25 focus:border-white/80 outline-none resize-none text-lg md:text-xl font-light leading-relaxed placeholder:text-white/20 py-2 transition-colors disabled:opacity-50';
 
-// All four questions and the optional pitch deck live in one window.
+// Startup name, the four validation questions, and the optional pitch deck live in one window.
 export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Props) {
-  const [a, setA] = useState<IdeaAnswers>({ idea: '', audience: '', different: '', stage: '', ...initial });
+  const [a, setA] = useState<IdeaAnswers>({ startupName: '', idea: '', audience: '', different: '', stage: '', ...initial });
   const [deck, setDeck] = useState<File | null>(null);
   const [touched, setTouched] = useState(false);
   const disabled = busy !== null || Boolean(blocked);
 
   const set = (k: keyof IdeaAnswers) => (v: string) => setA(p => ({ ...p, [k]: v }));
   const problems = {
+    startupName: a.startupName.trim().length < MIN.startupName ? 'Name your startup.' : '',
     idea: a.idea.trim().length < MIN.idea ? 'Describe your idea in a bit more detail (a couple of sentences).' : '',
     audience: a.audience.trim().length < MIN.audience ? 'Tell us who this is for.' : '',
     different: a.different.trim().length < MIN.different ? 'Tell us what makes it different.' : '',
@@ -55,7 +56,13 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
     e?.preventDefault();
     if (disabled || blocked) return;
     if (!valid) return setTouched(true);
-    onSubmit({ idea: a.idea.trim(), audience: a.audience.trim(), different: a.different.trim(), stage: a.stage }, deck);
+    onSubmit({
+      startupName: a.startupName.trim(),
+      idea: a.idea.trim(),
+      audience: a.audience.trim(),
+      different: a.different.trim(),
+      stage: a.stage,
+    }, deck);
   };
 
   const showErr = (k: keyof typeof problems) => touched && problems[k] && <p className="text-xs text-red-500">{problems[k]}</p>;
@@ -66,7 +73,15 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
       onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(); }}
       className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-10 grid gap-10"
     >
-      <Field n="01" label="Describe your startup idea" hint="What is it, what problem does it solve, and how does it work?">
+      <Field n="01" label="Startup name" hint="A working name is fine.">
+        <input
+          value={a.startupName} onChange={e => set('startupName')(e.target.value)} disabled={disabled} maxLength={80}
+          placeholder="e.g. Niva" className={underline}
+        />
+        {showErr('startupName')}
+      </Field>
+
+      <Field n="02" label="The idea" hint="What it is, and the problem it solves.">
         <textarea
           value={a.idea} onChange={e => set('idea')(e.target.value)} disabled={disabled} rows={4} maxLength={4000}
           placeholder="e.g. An app that tells freelancers how much they can safely withdraw each week…" className={underline}
@@ -74,7 +89,7 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
         {showErr('idea')}
       </Field>
 
-      <Field n="02" label="Who is this product for?" hint="Be specific: who they are, where they are, what they do.">
+      <Field n="03" label="Who is it for?" hint="Who they are, and where they are.">
         <textarea
           value={a.audience} onChange={e => set('audience')(e.target.value)} disabled={disabled} rows={2} maxLength={1500}
           placeholder="e.g. Solo freelancers and creators in the US and UK with irregular income" className={underline}
@@ -82,7 +97,7 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
         {showErr('audience')}
       </Field>
 
-      <Field n="03" label="What makes your solution different?" hint="Why would someone pick this over what they use today?">
+      <Field n="04" label="What is different?" hint="Why someone would pick this.">
         <textarea
           value={a.different} onChange={e => set('different')(e.target.value)} disabled={disabled} rows={3} maxLength={3000}
           placeholder="e.g. One safe-to-withdraw number tied to real income, with automatic tax set-asides" className={underline}
@@ -90,7 +105,7 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
         {showErr('different')}
       </Field>
 
-      <Field n="04" label="What is your current stage?" hint="Be honest. The report scores evidence, so where you are today matters.">
+      <Field n="05" label="Stage" hint="Where it is today.">
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Current stage">
           {STAGES.map(s => {
             const sel = a.stage === s.label;
@@ -109,7 +124,7 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
         {showErr('stage')}
       </Field>
 
-      <Field n="05" label="Add your pitch deck" hint="Have one? Upload it and we’ll factor it into the report." optional>
+      <Field n="06" label="Pitch deck" hint="Optional. Used in the report if you add one." optional>
         <DeckDropzone file={deck} onChange={setDeck} disabled={disabled} />
       </Field>
 

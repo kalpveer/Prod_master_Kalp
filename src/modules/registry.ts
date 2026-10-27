@@ -17,13 +17,13 @@ export interface AppModule {
 export const modules: AppModule[] = [
   {
     path: '/idea',
-    title: 'Idea Validation',
+    title: 'VentureLab',
     requiresAuth: true,
     load: () => import('./idea/IdeaModule'),
   },
   {
     path: '/grants',
-    title: 'Grant matching',
+    title: 'VentureLab',
     requiresAuth: true,
     load: () => import('./grants/GrantsModule'),
   },

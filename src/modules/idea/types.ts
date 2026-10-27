@@ -1,4 +1,5 @@
 export interface IdeaAnswers {
+  startupName: string;
   idea: string;
   audience: string;
   different: string;
@@ -16,6 +17,7 @@ export interface IdeaReportSummary {
   verdict: string | null;
   iq: number | null;
   stage: string;
+  startup_name: string;
   idea: string;
   deck_name: string | null;
   error: string | null;

@@ -22,3 +22,23 @@ export function validatePassword(raw: string) {
   if (!/[A-Za-z]/.test(raw) || !/\d/.test(raw)) return 'Password must include a letter and a number.';
   return null;
 }
+
+/** Saved on the profile only. A bare 10-digit number is treated as India (+91). */
+export function normalizePhone(raw: string): string | null {
+  let compact = raw.replace(/[^\d+]/g, '');
+  if (!compact) return null;
+  if (compact.startsWith('00')) compact = `+${compact.slice(2)}`;
+  if (!compact.startsWith('+')) {
+    if (/^0\d{10}$/.test(compact)) compact = `+91${compact.slice(1)}`;
+    else if (/^\d{10}$/.test(compact)) compact = `+91${compact}`;
+    else if (/^91\d{10}$/.test(compact)) compact = `+${compact}`;
+    else compact = `+${compact}`;
+  }
+  return /^\+[1-9]\d{7,14}$/.test(compact) ? compact : null;
+}
+
+export function validatePhone(raw: string) {
+  if (!raw.trim()) return 'Enter a phone number. It is saved on your account and is not used to sign in.';
+  if (!normalizePhone(raw)) return 'Enter a valid phone number. Use a country code if it is not an Indian number.';
+  return null;
+}

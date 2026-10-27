@@ -1,0 +1,111 @@
+.vl {
+  --vl-bg: #0c0c0d;
+  --vl-fg: #f5f5f4;
+  --vl-muted: rgba(245, 245, 244, 0.62);
+  --vl-faint: rgba(245, 245, 244, 0.38);
+  --vl-line: rgba(255, 255, 255, 0.12);
+  --vl-card: #161617;
+  --vl-btn: #f5f5f4;
+  --vl-btn-fg: #111111;
+  color-scheme: dark;
+  min-height: 100vh;
+  background: var(--vl-bg);
+  color: var(--vl-fg);
+}
+
+.vl[data-theme='light'] {
+  --vl-bg: #f3f2ee;
+  --vl-fg: #161616;
+  --vl-muted: rgba(22, 22, 22, 0.62);
+  --vl-faint: rgba(22, 22, 22, 0.42);
+  --vl-line: rgba(22, 22, 22, 0.12);
+  --vl-card: #ffffff;
+  --vl-btn: #161616;
+  --vl-btn-fg: #f7f7f5;
+  color-scheme: light;
+}
+
+.vl ::selection {
+  background: var(--vl-fg);
+  color: var(--vl-btn-fg);
+}
+
+.vl.bg-black,
+.vl .bg-black { background-color: var(--vl-bg) !important; }
+.vl .bg-black\/80 { background-color: color-mix(in srgb, var(--vl-bg) 88%, transparent) !important; }
+.vl .text-white { color: var(--vl-fg) !important; }
+.vl .text-black { color: var(--vl-btn-fg) !important; }
+.vl .bg-white { background-color: var(--vl-btn) !important; }
+.vl .text-white\/20,
+.vl .text-white\/25,
+.vl .text-white\/30,
+.vl .text-white\/35 { color: var(--vl-faint) !important; }
+.vl .text-white\/40,
+.vl .text-white\/45,
+.vl .text-white\/50,
+.vl .text-white\/55,
+.vl .text-white\/60,
+.vl .text-white\/65 { color: var(--vl-muted) !important; }
+.vl .text-white\/70,
+.vl .text-white\/80 { color: var(--vl-fg) !important; opacity: 0.82; }
+.vl .bg-white\/\[0\.03\],
+.vl .bg-white\/\[0\.05\],
+.vl .bg-white\/5,
+.vl .bg-white\/10 { background-color: var(--vl-card) !important; }
+.vl .border-white\/10,
+.vl .border-white\/15,
+.vl .border-white\/20,
+.vl .border-white\/25,
+.vl .border-white\/30 { border-color: var(--vl-line) !important; }
+.vl .border-white\/40 { border-color: var(--vl-fg) !important; }
+.vl .bg-white\/10.border-white\/40,
+.vl .border-white\/40.bg-white\/10 {
+  background: var(--vl-fg) !important;
+  color: var(--vl-btn-fg) !important;
+  border-color: var(--vl-fg) !important;
+}
+.vl .hover\:text-white:hover,
+.vl .hover\:text-white\/70:hover { color: var(--vl-fg) !important; opacity: 1; }
+.vl .hover\:bg-white\/90:hover { filter: brightness(0.92); }
+.vl .hover\:bg-white\/5:hover { background-color: var(--vl-card) !important; }
+.vl .hover\:border-white\/25:hover,
+.vl .hover\:border-white\/30:hover { border-color: var(--vl-fg) !important; }
+.vl .placeholder\:text-white\/20::placeholder { color: var(--vl-faint); }
+.vl .focus\:border-white\/80:focus { border-color: var(--vl-fg) !important; }
+.vl .border-dashed { border-color: var(--vl-line) !important; }
+
+/* The first-visit hero stays cinematic even in light mode. */
+.vl .vl-hero .bg-black { background-color: #000 !important; }
+.vl .vl-hero .text-black { color: #111 !important; }
+
+.vl[data-theme='light'] .prose-invert {
+  --tw-prose-body: #161616;
+  --tw-prose-headings: #161616;
+  --tw-prose-links: #161616;
+  color: var(--vl-fg);
+}
+
+.vl[data-theme='light'] .rounded-2xl.border,
+.vl[data-theme='light'] .rounded-3xl.border {
+  box-shadow: 0 1px 2px rgba(22, 22, 22, 0.04);
+}
+
+/* Sign-in / sign-up. Glows sit behind a frosted panel so the blur has something to catch. */
+.vl-auth-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  pointer-events: none;
+}
+.vl-glass {
+  background: color-mix(in srgb, var(--vl-fg) 7%, transparent);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid color-mix(in srgb, var(--vl-fg) 18%, transparent);
+  box-shadow: 0 24px 60px color-mix(in srgb, #000 22%, transparent);
+}
+.vl[data-theme='light'] .vl-glass {
+  background: color-mix(in srgb, #fff 58%, transparent);
+  border-color: color-mix(in srgb, #fff 72%, transparent);
+  box-shadow: 0 24px 60px rgba(22, 22, 22, 0.08);
+}

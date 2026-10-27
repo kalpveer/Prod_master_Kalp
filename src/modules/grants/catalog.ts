@@ -36,7 +36,15 @@ export type GrantSector = (typeof GRANT_SECTORS)[number];
 export type GrantState = (typeof GRANT_STATES)[number];
 export type GrantApplicant = (typeof GRANT_APPLICANTS)[number]['id'];
 
-export interface GrantInput {
+/** The venture questions Validate and Grants share. */
+export interface VentureAnswers {
+  startupName: string;
+  idea: string;
+  audience: string;
+  different: string;
+}
+
+export interface GrantInput extends VentureAnswers {
   stage: string;
   sector: GrantSector | '';
   state: GrantState | '';

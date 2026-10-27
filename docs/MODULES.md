@@ -52,4 +52,6 @@ See [`.env.example`](../.env.example). `SUPABASE_SERVICE_ROLE_KEY` and `PICKAXE_
 - **Authentication → URL Configuration:** Site URL must be the live Vercel URL (never `http://localhost:5173`). Redirect URLs: `http://localhost:5173/**`, `https://*.vercel.app/**`, `https://productica.in/**`.
 - **Authentication → Providers → Email:** enable Email, allow sign-ups, turn **Confirm email OFF**. Sign-in is username / email + password. Do not use magic links.
 - **Authentication → SMTP:** use a custom SMTP provider before launch if you want password-reset emails. The built-in sender is limited to a handful of emails per hour.
-- Run `0001_idea_module.sql`, then `0002_quotas_and_grants.sql`, then `0003_password_auth.sql`, in the SQL editor.
+- Run `0001_idea_module.sql`, then `0002_quotas_and_grants.sql`, then `0003_password_auth.sql`, then `0004_phone_and_startup_name.sql`, in the SQL editor.
+- Sign-up stores `profiles.phone` for contact only. It is not a login method.
+- `/idea` stores `idea_reports.startup_name` as the first answer and sends it with the validation prompt.

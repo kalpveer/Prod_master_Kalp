@@ -52,7 +52,7 @@ export default function ReportView({ id, onBack, onRetry }: Props) {
         setReport(r);
         setNow(Date.now());
         setLoadError('');
-        if (r) writeWorkspace({ ideaId: r.id, venture: r.title || r.idea, stage: r.stage });
+        if (r) writeWorkspace({ ideaId: r.id, venture: r.startup_name || r.title || r.idea, stage: r.stage });
         if (r?.status === 'running') timer = setTimeout(load, POLL_MS);
       } catch (e) {
         if (!alive) return;
@@ -79,7 +79,7 @@ export default function ReportView({ id, onBack, onRetry }: Props) {
 
   if (report === null) return <Message title="Report not found" body="It may have been deleted." onBack={onBack} />;
 
-  const answers: IdeaAnswers = { idea: report.idea, audience: report.audience, different: report.different, stage: report.stage };
+  const answers: IdeaAnswers = { startupName: report.startup_name, idea: report.idea, audience: report.audience, different: report.different, stage: report.stage };
   const startedAt = new Date(report.created_at).getTime();
 
   if (report.status === 'running') {

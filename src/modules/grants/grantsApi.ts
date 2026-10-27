@@ -1,5 +1,5 @@
 import { getSupabase } from '../../lib/supabase';
-import type { GrantInput, GrantMatch } from './catalog';
+import type { GrantInput, GrantMatch, VentureAnswers } from './catalog';
 
 export interface GrantRunSummary {
   id: string;
@@ -13,6 +13,8 @@ export interface GrantRunSummary {
   ready_count: number;
   matches: GrantMatch[];
   report: string;
+  /** Present when this match was started on Grants, before a validation existed. */
+  profile: VentureAnswers | null;
 }
 
 const RUN_COLUMNS = 'id,created_at,venture,stage,sector,state,applicant,idea_report_id,ready_count,matches';
@@ -53,15 +55,30 @@ export const grantsApi = {
   },
 };
 
+function asProfile(value: unknown): VentureAnswers | null {
+  if (!value || typeof value !== 'object') return null;
+  const row = value as Record<string, unknown>;
+  const startupName = String(row.startupName || '');
+  const idea = String(row.idea || '');
+  if (!startupName && !idea) return null;
+  return {
+    startupName,
+    idea,
+    audience: String(row.audience || ''),
+    different: String(row.different || ''),
+  };
+}
+
 function unpackRun(row: Record<string, unknown>): GrantRunSummary {
   const raw = row.matches;
   if (Array.isArray(raw)) {
-    return { ...(row as unknown as GrantRunSummary), matches: raw as GrantMatch[], report: '' };
+    return { ...(row as unknown as GrantRunSummary), matches: raw as GrantMatch[], report: '', profile: null };
   }
-  const packed = raw && typeof raw === 'object' ? raw as { items?: GrantMatch[]; report?: string } : {};
+  const packed = raw && typeof raw === 'object' ? raw as { items?: GrantMatch[]; report?: string; profile?: unknown } : {};
   return {
     ...(row as unknown as GrantRunSummary),
     matches: packed.items ?? [],
     report: packed.report ?? '',
+    profile: asProfile(packed.profile),
   };
 }

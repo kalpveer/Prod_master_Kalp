@@ -35,11 +35,11 @@ export default function ReportFrame({ markdown, grantsHref, onBack }: Props) {
     <div className="fixed inset-0 z-50 bg-black flex flex-col">
       <div className="h-12 flex-none flex items-center justify-between px-4 md:px-8 border-b border-white/10 text-white">
         <button onClick={onBack} className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-white/50 hover:text-white transition-colors">
-          <ArrowLeft size={14} /> My validations
+          <ArrowLeft size={14} /> Validate
         </button>
         <div className="flex items-center gap-2">
           <a href={grantsHref} className="flex items-center gap-2 text-xs font-semibold rounded-full bg-white text-black px-4 py-1.5 hover:bg-white/90 transition-colors">
-            Check grants <ArrowRight size={14} />
+            Grants <ArrowRight size={14} />
           </a>
           <button
             onClick={() => ref.current?.contentWindow?.print()}

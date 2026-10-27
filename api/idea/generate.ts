@@ -46,6 +46,7 @@ export default async function handler(req: any, res: any) {
     }
 
     const body = typeof req.body === 'string' ? safeJson(req.body) || {} : req.body || {};
+    const startupName = clean(body.startupName, 80);
     const idea = clean(body.idea, 4000);
     const audience = clean(body.audience, 1500);
     const different = clean(body.different, 3000);
@@ -53,6 +54,7 @@ export default async function handler(req: any, res: any) {
     const deckPath = clean(body.deckPath, 300);
     const deckName = clean(body.deckName, 200);
 
+    if (startupName.length < 2) return res.status(400).json({ error: 'Name your startup.' });
     if (idea.length < 20) return res.status(400).json({ error: 'Describe your idea in a bit more detail.' });
     if (audience.length < 3) return res.status(400).json({ error: 'Tell us who the product is for.' });
     if (different.length < 5) return res.status(400).json({ error: 'Tell us what makes your solution different.' });
@@ -91,7 +93,7 @@ export default async function handler(req: any, res: any) {
     const { data: row, error: insertError } = await admin
       .from('idea_reports')
       .insert({
-        user_id: user.id, status: 'running', idea, audience, different, stage,
+        user_id: user.id, status: 'running', startup_name: startupName, idea, audience, different, stage,
         deck_path: deckPath || null, deck_name: deckName || null,
       })
       .select('id')
@@ -104,7 +106,7 @@ export default async function handler(req: any, res: any) {
       return res.status(500).json({ error: 'Could not start your report. Please try again.' });
     }
 
-    const job = runReport(row.id, user.id, { idea, audience, different, stage, deckPath, deckName }).catch(e =>
+    const job = runReport(row.id, user.id, { startupName, idea, audience, different, stage, deckPath, deckName }).catch(e =>
       console.error('[idea/generate] unhandled job error', e),
     );
     try { waitUntil(job); } catch { /* not on Vercel: the promise simply keeps running */ }
@@ -123,7 +125,7 @@ export default async function handler(req: any, res: any) {
 async function runReport(
   id: string,
   userId: string,
-  a: { idea: string; audience: string; different: string; stage: string; deckPath: string; deckName: string },
+  a: { startupName: string; idea: string; audience: string; different: string; stage: string; deckPath: string; deckName: string },
 ) {
   const admin = getAdmin();
   const finish = async (patch: Record<string, unknown>) => {
@@ -146,6 +148,7 @@ async function runReport(
     }
 
     const message = [
+      `Name of your startup: ${a.startupName}`,
       `Describe your startup idea: ${a.idea}`,
       `Who is this product for?: ${a.audience}`,
       `What makes your solution different?: ${a.different}`,
@@ -155,7 +158,7 @@ async function runReport(
 
     const markdown = await completePickaxe(process.env.PICKAXE_DEPLOYMENT_ID, message, userId, PICKAXE_TIMEOUT_MS);
     const meta = readMeta(markdown);
-    await finish({ status: 'done', markdown, title: meta.title, verdict: meta.verdict, iq: meta.iq, error: null });
+    await finish({ status: 'done', markdown, title: meta.title || a.startupName, verdict: meta.verdict, iq: meta.iq, error: null });
   } catch (e: any) {
     console.error('[idea/generate] run failed', id, e?.message);
     const message = e instanceof UserFacingError || e instanceof PickaxeError

@@ -6,6 +6,11 @@ export interface Workspace {
   grantRunId?: string;
   venture?: string;
   stage?: string;
+  /** Same answers Validate asks. Grants reuses them so the questions are not asked twice. */
+  startupName?: string;
+  idea?: string;
+  audience?: string;
+  different?: string;
 }
 
 export function readWorkspace(): Workspace {

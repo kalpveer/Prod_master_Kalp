@@ -41,6 +41,10 @@ export default async function handler(req: any, res: any) {
     const state = clean(body.state, 80);
     const applicant = clean(body.applicant, 40);
     const ideaReportId = clean(body.ideaReportId, 64);
+    const startupName = clean(body.startupName, 80);
+    const ideaText = clean(body.idea, 4000);
+    const audience = clean(body.audience, 1500);
+    const different = clean(body.different, 3000);
 
     if (venture.length < 8) return res.status(400).json({ error: 'Name the venture in a few words.' });
     if (!STAGES.includes(stage)) return res.status(400).json({ error: 'Pick the stage.' });
@@ -50,17 +54,24 @@ export default async function handler(req: any, res: any) {
 
     let ideaContext = '';
     let linkedIdea: string | null = null;
+    let linkedProfile: { startupName: string; idea: string; audience: string; different: string } | null = null;
     if (ideaReportId) {
       const { data: idea } = await admin
         .from('idea_reports')
-        .select('id,title,idea,audience,different,stage,verdict,iq')
+        .select('id,title,startup_name,idea,audience,different,stage,verdict,iq')
         .eq('id', ideaReportId)
         .eq('user_id', user.id)
         .maybeSingle();
       if (idea) {
         linkedIdea = idea.id;
+        linkedProfile = {
+          startupName: idea.startup_name || idea.title || '',
+          idea: idea.idea,
+          audience: idea.audience,
+          different: idea.different,
+        };
         ideaContext = [
-          `Linked idea validation: ${idea.title || 'Untitled'}`,
+          `Linked idea validation: ${idea.startup_name || idea.title || 'Untitled'}`,
           `Idea: ${idea.idea}`,
           `Audience: ${idea.audience}`,
           `What is different: ${idea.different}`,
@@ -69,6 +80,20 @@ export default async function handler(req: any, res: any) {
           idea.iq != null ? `Syncoro IQ: ${idea.iq}` : '',
         ].filter(Boolean).join('\n');
       }
+    }
+
+    // Started on Grants, so the same venture questions live on this request.
+    if (!linkedIdea) {
+      if (startupName.length < 2) return res.status(400).json({ error: 'Name your startup.' });
+      if (ideaText.length < 20) return res.status(400).json({ error: 'Describe your idea in a bit more detail (a couple of sentences).' });
+      if (audience.length < 3) return res.status(400).json({ error: 'Tell us who this is for.' });
+      if (different.length < 5) return res.status(400).json({ error: 'Tell us what makes it different.' });
+      ideaContext = [
+        `Startup name: ${startupName}`,
+        `Idea: ${ideaText}`,
+        `Audience: ${audience}`,
+        `What is different: ${different}`,
+      ].join('\n');
     }
 
     const { data: catalog } = await admin
@@ -103,7 +128,11 @@ export default async function handler(req: any, res: any) {
         sector,
         state,
         applicant,
-        matches: { report, items },
+        matches: {
+          report,
+          items,
+          profile: linkedProfile || { startupName, idea: ideaText, audience, different },
+        },
         ready_count: readyCount,
       })
       .select('id,created_at')
