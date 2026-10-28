@@ -1,4 +1,6 @@
 /* eslint-disable */
+import { prepareGrantReport } from './grantReport.js';
+
 export interface GrantInput {
   venture: string;
   stage: string;
@@ -50,8 +52,9 @@ export function parseGrantResult(raw: string): { report: string; items: GrantMat
   const report = raw.trim();
   const parsed = extractJson(report);
   const list = Array.isArray(parsed) ? parsed : parsed?.matches || parsed?.grants || parsed?.schemes || parsed?.items;
-  if (!Array.isArray(list)) return { report, items: [] };
-  return { report: typeof parsed?.report === 'string' ? parsed.report : report, items: list.flatMap(normalizeMatch) };
+  if (!Array.isArray(list)) return { report: prepareGrantReport(report), items: [] };
+  const narrative = typeof parsed?.report === 'string' ? parsed.report : report;
+  return { report: prepareGrantReport(narrative), items: list.flatMap(normalizeMatch) };
 }
 
 function extractJson(text: string): any {

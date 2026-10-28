@@ -112,6 +112,8 @@ export default async function handler(req: any, res: any) {
       catalog?.length
         ? `\nKnown public schemes in our catalog (use as reference, not a hard limit):\n${catalog.map(s => `- ${s.name} (${s.provider}) ${s.href}`).join('\n')}`
         : '',
+      '',
+      'Write the report in plain English for founders. Do not use LaTeX or $...$ math. Use ≤ and → as normal characters. Do not wrap words in underscores. Every bullet must include readable text, not a URL alone.',
     ].filter(Boolean).join('\n');
 
     const raw = await completePickaxe(process.env.PICKAXE_GRANTS_DEPLOYMENT_ID, message, user.id);

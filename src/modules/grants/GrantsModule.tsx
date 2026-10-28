@@ -10,6 +10,7 @@ import type { IdeaReportSummary } from '../idea/types';
 import WaitNewsScreen from '../wait/WaitNewsScreen';
 import { grantsApi, type GrantRunSummary } from './grantsApi';
 import { extractApplyLinks, isHttpUrl, linkifyMarkdown } from './linkify';
+import { prepareGrantReport } from './reportMarkdown';
 import {
   GRANT_APPLICANTS,
   GRANT_SECTORS,
@@ -616,7 +617,7 @@ function ResultList({
         </div>
       )}
 
-      {extraLinks.length > 0 && (
+      {cards.length === 0 && extraLinks.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {extraLinks.map(link => (
             <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-black text-sm font-semibold px-4 py-2 hover:bg-white/90">
@@ -646,6 +647,8 @@ function GrantMarkdown({ text }: { text: string }) {
   return (
     <ReactMarkdown
       components={{
+        em: ({ children }) => <span className="italic text-inherit">{children}</span>,
+        strong: ({ children }) => <span className="font-semibold text-inherit">{children}</span>,
         a: ({ href, children }) => (
           isHttpUrl(href) ? (
             <a href={href} target="_blank" rel="noreferrer" className="text-white underline underline-offset-2 hover:text-white/70 font-semibold">
@@ -655,7 +658,7 @@ function GrantMarkdown({ text }: { text: string }) {
         ),
       }}
     >
-      {linkifyMarkdown(text)}
+      {linkifyMarkdown(prepareGrantReport(text))}
     </ReactMarkdown>
   );
 }
