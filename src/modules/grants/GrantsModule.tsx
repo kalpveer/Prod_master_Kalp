@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUpRight, FileText, Trash2 } from 'lucide-react';
 import { PrismaHero } from '@/components/ui/prisma-hero';
 import { useAuth } from '../../auth/useAuth';
 import ToolChrome from '../ToolChrome';
+import ToolLanding from '../ToolLanding';
 import { writeWorkspace } from '../workspace';
 import { ideaApi } from '../idea/ideaApi';
 import type { IdeaReportSummary } from '../idea/types';
@@ -45,6 +46,7 @@ export default function GrantsModule() {
   const [showForm, setShowForm] = useState(true);
   /** True when the visitor chose to answer the venture questions on this page. */
   const [ownIdea, setOwnIdea] = useState(false);
+  const [entered, setEntered] = useState(() => Boolean(ideaFromUrl()));
 
   useEffect(() => {
     document.title = 'Grants · VentureLab';
@@ -247,6 +249,19 @@ export default function GrantsModule() {
     ? `/idea?r=${source.id}`
     : `/idea?from=grants`;
 
+  if (!entered) {
+    return (
+      <ToolLanding
+        title="Grants"
+        eyebrow="Grant matching"
+        description="Find the funding your startup deserves."
+        detail="Discover startup grants and government schemes tailored to your business, industry, and stage. Spend less time searching and more time building."
+        ctaLabel="Match grants"
+        onEnter={() => setEntered(true)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
       {busy && waitStartedAt && (
@@ -265,7 +280,7 @@ export default function GrantsModule() {
       </ToolChrome>
 
       <main className="max-w-6xl mx-auto px-6 md:px-12 pt-8 pb-28">
-        <section className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(260px,320px)]">
+        <section className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
           <PrismaHero
             compact
             title="Grants"
@@ -274,7 +289,40 @@ export default function GrantsModule() {
             ctaHref="#match"
             secondary={{ label: 'Open Validate', href: '/idea' }}
           />
-          <ContextCard source={source} input={input} validateHref={validateHref} asking={askingVenture} hasIdeas={Boolean(ideas?.length)} />
+          <aside className="flex h-full min-h-[280px] max-h-[520px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+            <div className="px-5 pt-5">
+              <ContextCard source={source} input={input} validateHref={validateHref} asking={askingVenture} hasIdeas={Boolean(ideas?.length)} />
+            </div>
+            <div className="mx-5 mt-4 border-t border-white/10" />
+            <div className="px-5 pt-4">
+              <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Saved shortlists</p>
+            </div>
+            <div className="mt-3 min-h-0 flex-1 overflow-y-auto px-5 pb-5">
+              {runs === null ? (
+                <p className="text-sm text-white/30">Loading your matches…</p>
+              ) : runs.length === 0 ? (
+                <p className="text-sm text-white/40">Each match is saved here so you can reopen it.</p>
+              ) : (
+                <div>
+                  {runs.map(item => (
+                    <div key={item.id} className="flex items-start gap-3 border-b border-white/10 py-3 last:border-b-0">
+                      <button type="button" onClick={() => openRun(item)} className="flex-1 min-w-0 text-left">
+                        <span className="block truncate text-sm font-semibold tracking-tight">{item.profile?.startupName || item.venture}</span>
+                        <span className="mt-1 block text-xs text-white/40">
+                          {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {item.idea_report_id ? ' · from a validation' : item.profile ? ' · started on Grants' : ''}
+                          {' · '}{item.ready_count} ready
+                        </span>
+                      </button>
+                      <button type="button" onClick={() => void removeRun(item.id)} aria-label="Delete shortlist" className="text-white/20 hover:text-red-400 transition-colors">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </aside>
         </section>
 
         {hasResults && (
@@ -301,10 +349,11 @@ export default function GrantsModule() {
           </section>
         )}
 
-        <div className={`grid lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] gap-10 lg:gap-12 items-start ${hasResults ? 'mt-16' : 'mt-14'}`}>
-          <section id="match" className={`scroll-mt-8 ${hasResults && !showForm ? 'hidden lg:block' : ''}`}>
+        <div className={hasResults ? 'mt-16' : 'mt-14'}>
+          <section id="match" className={`mx-auto w-full max-w-5xl scroll-mt-8 ${hasResults && !showForm ? 'hidden lg:block' : ''}`}>
+            <div className="mb-6 text-center">
             <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30 mb-3">Grant match</p>
-            <h2 className="text-2xl md:text-3xl font-light tracking-tight mb-6">
+            <h2 className="text-2xl md:text-3xl font-light tracking-tight">
               {hasResults
                 ? <>Adjust and <span className="font-semibold">run again.</span></>
                 : source
@@ -313,8 +362,9 @@ export default function GrantsModule() {
                     ? <>Start with one of <span className="font-semibold">your ideas.</span></>
                     : <>Start with the <span className="font-semibold">venture.</span></>}
             </h2>
+            </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 md:p-10 grid gap-10">
+            <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 md:p-10 grid gap-10 [&>*]:min-w-0">
               {ideas === null ? (
                 <p className="text-sm text-white/30">Loading your ideas…</p>
               ) : ideas.length > 0 ? (
@@ -456,66 +506,6 @@ export default function GrantsModule() {
               )}
             </div>
           </section>
-
-          <aside className="lg:sticky lg:top-6">
-            {!hasResults && (
-              <div className="mb-10">
-                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Shortlist</p>
-                <p className="mt-2 mb-4 text-sm text-white/40">
-                  {source
-                    ? `Using ${source.startup_name?.trim() || source.title || 'your validation'}. The venture questions are already answered.`
-                    : askingVenture
-                      ? 'Not tied to a validation yet. These answers carry over if you validate this idea later.'
-                      : 'Pick one of your ideas, or start a new one. Both tools share the same three ideas.'}
-                </p>
-                {busy ? (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-8">
-                    <p className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-white/60">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Matching
-                    </p>
-                    <p className="mt-3 text-base font-semibold tracking-tight">The grant engine is reading this venture.</p>
-                    <p className="mt-2 text-sm text-white/40 leading-relaxed">This usually takes a minute. Stay on this page.</p>
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-white/15 px-5 py-8">
-                    <p className="text-base font-semibold tracking-tight">No shortlist yet</p>
-                    <p className="mt-2 text-sm text-white/40 leading-relaxed">
-                      {source
-                        ? 'Pick a sector, where it is based, and who is applying.'
-                        : askingVenture
-                          ? 'Answer the venture questions, then sector, location, and who is applying.'
-                          : 'Pick an idea to start the match.'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30 mb-3">Saved shortlists</p>
-            {runs === null ? (
-              <p className="text-sm text-white/30">Loading your matches…</p>
-            ) : runs.length === 0 ? (
-              <p className="text-sm text-white/40">Each match is saved to this account so you can reopen it later.</p>
-            ) : (
-              <div className="grid gap-2">
-                {runs.map(item => (
-                  <div key={item.id} className="flex items-start gap-3 rounded-2xl border border-white/10 px-4 py-3">
-                    <button type="button" onClick={() => openRun(item)} className="flex-1 min-w-0 text-left">
-                      <span className="block text-sm font-semibold tracking-tight truncate">{item.profile?.startupName || item.venture}</span>
-                      <span className="mt-1 block text-xs text-white/40">
-                        {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        {item.idea_report_id ? ' · from a validation' : item.profile ? ' · started on Grants' : ''}
-                        {' · '}{item.ready_count} ready
-                      </span>
-                    </button>
-                    <button type="button" onClick={() => void removeRun(item.id)} aria-label="Delete shortlist" className="text-white/20 hover:text-red-400 transition-colors">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </aside>
         </div>
       </main>
     </div>
@@ -525,7 +515,7 @@ export default function GrantsModule() {
 function ContextCard({ source, input, validateHref, asking, hasIdeas }: { source: IdeaReportSummary | null; input: GrantInput; validateHref: string; asking: boolean; hasIdeas: boolean }) {
   if (source) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-5">
+      <div>
         <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Shared with idea validation</p>
         <p className="mt-2 text-lg font-semibold tracking-tight">{source.startup_name?.trim() || source.title || source.idea}</p>
         <p className="mt-1 text-sm text-white/45">{source.stage}{source.verdict ? ` · ${source.verdict}` : ''}{source.iq != null ? ` · IQ ${Number(source.iq).toFixed(1)}` : ''}</p>
@@ -538,7 +528,7 @@ function ContextCard({ source, input, validateHref, asking, hasIdeas }: { source
 
   if (!asking && hasIdeas) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-5">
+      <div>
         <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Your ideas</p>
         <p className="mt-2 text-sm text-white/55 leading-relaxed">Pick a validation to skip the venture questions, or start a new idea here. Both tools share the same ideas, up to 3 on this account.</p>
       </div>
@@ -546,7 +536,7 @@ function ContextCard({ source, input, validateHref, asking, hasIdeas }: { source
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-5">
+    <div>
       <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Started on Grants</p>
       <p className="mt-2 text-sm text-white/55 leading-relaxed">
         {input.startupName.trim() ? `${input.startupName.trim()} is not validated yet. The answers below carry over.` : 'Answer the venture questions once. Validate can reuse them.'}
@@ -617,19 +607,23 @@ function ResultList({
         </div>
       )}
 
-      {cards.length === 0 && extraLinks.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {extraLinks.map(link => (
-            <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-black text-sm font-semibold px-4 py-2 hover:bg-white/90">
-              Apply on {link.label} <ArrowUpRight size={14} />
-            </a>
-          ))}
-        </div>
-      )}
+      {reportParts(report).map((part, i) => (
+        <article key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-5 sm:px-6">
+          <GrantMarkdown text={part} />
+        </article>
+      ))}
 
-      {report && (
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-5 text-sm text-white/70 leading-relaxed prose prose-sm prose-invert max-w-none prose-p:my-2 prose-headings:text-white prose-a:text-white prose-a:underline prose-a:underline-offset-2">
-          <GrantMarkdown text={report} />
+      {cards.length === 0 && extraLinks.length > 0 && (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4">
+          <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Official pages</p>
+          <div className="mt-2 grid gap-1">
+            {extraLinks.map(link => (
+              <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-3 rounded-xl px-2 py-2.5 text-sm hover:bg-black/5">
+                <span className="min-w-0 truncate font-semibold">{link.label}</span>
+                <span className="inline-flex shrink-0 items-center gap-1 text-white/50">Open <ArrowUpRight size={14} /></span>
+              </a>
+            ))}
+          </div>
         </div>
       )}
 
@@ -643,23 +637,35 @@ function ResultList({
   );
 }
 
+function reportParts(text: string): string[] {
+  const clean = prepareGrantReport(text);
+  if (!clean) return [];
+  return clean.split(/\n\s*(?:---|\*\*\*)\s*\n/).map(part => part.trim()).filter(Boolean);
+}
+
 function GrantMarkdown({ text }: { text: string }) {
   return (
-    <ReactMarkdown
-      components={{
-        em: ({ children }) => <span className="italic text-inherit">{children}</span>,
-        strong: ({ children }) => <span className="font-semibold text-inherit">{children}</span>,
-        a: ({ href, children }) => (
-          isHttpUrl(href) ? (
-            <a href={href} target="_blank" rel="noreferrer" className="text-white underline underline-offset-2 hover:text-white/70 font-semibold">
-              {children}
-            </a>
-          ) : <span>{children}</span>
-        ),
-      }}
-    >
-      {linkifyMarkdown(prepareGrantReport(text))}
-    </ReactMarkdown>
+    <div className="vl-report text-sm leading-relaxed">
+      <ReactMarkdown
+        components={{
+          h1: ({ children }) => <h2 className="vl-report-title">{children}</h2>,
+          h2: ({ children }) => <h2 className="vl-report-title">{children}</h2>,
+          h3: ({ children }) => <h3 className="vl-report-title">{children}</h3>,
+          h4: ({ children }) => <h3 className="vl-report-title">{children}</h3>,
+          em: ({ children }) => <strong className="vl-report-title">{children}</strong>,
+          strong: ({ children }) => <strong className="vl-report-title">{children}</strong>,
+          a: ({ href, children }) => (
+            isHttpUrl(href) ? (
+              <a href={href} target="_blank" rel="noreferrer">
+                {children}
+              </a>
+            ) : <span>{children}</span>
+          ),
+        }}
+      >
+        {linkifyMarkdown(text)}
+      </ReactMarkdown>
+    </div>
   );
 }
 

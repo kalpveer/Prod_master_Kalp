@@ -19,7 +19,7 @@ function initialTheme(): VentureThemeName {
   } catch {
     /* private mode */
   }
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  return 'light';
 }
 
 export function VentureTheme({ children }: { children: ReactNode }) {

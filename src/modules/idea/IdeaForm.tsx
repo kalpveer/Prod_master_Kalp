@@ -71,7 +71,7 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
     <form
       onSubmit={submit}
       onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(); }}
-      className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-10 grid gap-10"
+      className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-10 grid gap-10 [&>*]:min-w-0"
     >
       <Field n="01" label="Startup name" hint="A working name is fine.">
         <input

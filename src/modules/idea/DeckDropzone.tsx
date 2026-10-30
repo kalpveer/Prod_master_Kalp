@@ -37,10 +37,10 @@ export default function DeckDropzone({ file, onChange, disabled }: Props) {
       />
 
       {file ? (
-        <div className="flex items-center gap-4 rounded-2xl border border-white/20 bg-white/[0.05] px-5 py-4">
+        <div className="flex min-w-0 items-center gap-4 overflow-hidden rounded-2xl border border-white/20 bg-white/[0.05] px-5 py-4">
           <span className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-none"><FileText size={18} /></span>
-          <span className="flex-1 min-w-0">
-            <span className="block text-sm font-semibold truncate">{file.name}</span>
+          <span className="min-w-0 flex-1 overflow-hidden">
+            <span className="block truncate text-sm font-semibold">{file.name}</span>
             <span className="block text-xs text-white/40">{prettySize(file.size)}</span>
           </span>
           <button
@@ -55,13 +55,13 @@ export default function DeckDropzone({ file, onChange, disabled }: Props) {
           type="button" disabled={disabled} onClick={() => inputRef.current?.click()}
           onDragOver={e => { e.preventDefault(); if (!disabled) setDragging(true); }}
           onDragLeave={() => setDragging(false)} onDrop={onDrop}
-          className={`w-full flex flex-col items-center gap-2 rounded-2xl border border-dashed px-6 py-8 text-center transition-colors disabled:pointer-events-none ${
+          className={`w-full min-w-0 flex flex-col items-center gap-2 overflow-hidden rounded-2xl border border-dashed px-6 py-8 text-center transition-colors disabled:pointer-events-none ${
             dragging ? 'border-white/60 bg-white/10' : 'border-white/20 bg-white/[0.02] hover:border-white/40 hover:bg-white/[0.05]'
           }`}
         >
           <Upload size={20} className="text-white/50" />
-          <span className="text-sm text-white/80">Drop your pitch deck here, or <span className="underline underline-offset-4">browse</span></span>
-          <span className="text-xs text-white/40">PDF or PowerPoint (.pptx) · up to 10 MB · we read the text of your slides</span>
+          <span className="max-w-full text-sm text-white/80">Drop your pitch deck here, or <span className="underline underline-offset-4">browse</span></span>
+          <span className="max-w-full text-xs text-white/40 break-words">PDF or PowerPoint (.pptx) · up to 10 MB · we read the text of your slides</span>
         </button>
       )}
 

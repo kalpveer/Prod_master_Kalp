@@ -10,8 +10,11 @@ export function prepareGrantReport(text: string): string {
 
   s = normalizeLatex(s);
 
-  // LLM underscore "emphasis" breaks react-markdown and eats words (e.g. _student founders_).
+  // Underscore and asterisk emphasis is what leaves blank gaps in the write-up.
+  // Keep the words, drop the markers, then escape any underscore that is left.
   s = s.replace(/https?:\/\/[^\s<>)]+/gi, url => url.replace(/_/g, URL_US));
+  s = s.replace(/(?<!\\)_(?!\s)([^_\n]+?)(?<!\s)_/g, '$1');
+  s = s.replace(/(?<!\*)\*(?!\s|\*)([^*\n]+?)(?<!\s)\*(?!\*)/g, '$1');
   s = s.replace(/(?<!\\)_/g, '\\_');
   s = s.replaceAll(URL_US, '_');
 

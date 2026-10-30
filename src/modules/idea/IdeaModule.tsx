@@ -3,6 +3,7 @@ import { ArrowRight, FileText, Trash2 } from 'lucide-react';
 import { PrismaHero } from '@/components/ui/prisma-hero';
 import { useAuth } from '../../auth/useAuth';
 import ToolChrome from '../ToolChrome';
+import ToolLanding from '../ToolLanding';
 import { readWorkspace, writeWorkspace } from '../workspace';
 import { grantsApi } from '../grants/grantsApi';
 import IdeaForm, { type FormBusy } from './IdeaForm';
@@ -33,6 +34,10 @@ export default function IdeaModule() {
   const [prefill, setPrefill] = useState<Partial<IdeaAnswers> | undefined>();
   const [formKey, setFormKey] = useState(0);
   const [grantByIdea, setGrantByIdea] = useState<Record<string, string>>({});
+  const [entered, setEntered] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('from') === 'grants' || Boolean(params.get('r'));
+  });
 
   useEffect(() => {
     document.title = 'Validate · VentureLab';
@@ -171,6 +176,19 @@ export default function IdeaModule() {
     ? 'A report is already generating. It will appear in your history when it is ready.'
     : undefined;
 
+  if (!entered) {
+    return (
+      <ToolLanding
+        title="Validate"
+        eyebrow="Idea validation"
+        description="Big ideas deserve better than guesswork."
+        detail="Validate your startup idea with AI-powered market insights, competitor analysis, and product-market fit intelligence. Know your opportunity before you build."
+        ctaLabel="Start a validation"
+        onEnter={() => setEntered(true)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
       <ToolChrome active="idea" account={displayName} onSignOut={() => void signOut()}>
@@ -179,7 +197,7 @@ export default function IdeaModule() {
       </ToolChrome>
 
       <main className="max-w-6xl mx-auto px-6 md:px-12 pt-8 pb-28">
-        <section className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(260px,320px)]">
+        <section className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
           <PrismaHero
             compact
             title="Validate"
@@ -188,69 +206,60 @@ export default function IdeaModule() {
             ctaHref={remaining === 0 ? '#history' : '#validate'}
             secondary={{ label: 'Open Grants', href: '/grants' }}
           />
-          <Allowance used={used} />
+          <aside id="history" className="flex h-full min-h-[280px] max-h-[520px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] scroll-mt-8">
+            <div className="px-5 pt-5">
+              <Allowance used={used} />
+            </div>
+            <div className="mx-5 mt-4 border-t border-white/10" />
+            <div className="px-5 pt-4">
+              <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Your validations</p>
+              <p className="mt-1 text-sm text-white/40">Saved on this account.</p>
+            </div>
+            <div className="mt-3 min-h-0 flex-1 overflow-y-auto px-5 pb-5">
+              {listError && <p role="alert" className="mb-3 text-sm text-red-500">{listError}</p>}
+              {reports === null ? (
+                <p className="text-sm text-white/30">Loading your reports…</p>
+              ) : reports.length === 0 ? (
+                <p className="text-sm text-white/40">Finished reports show up here.</p>
+              ) : (
+                <div>
+                  {reports.map(r => (
+                    <HistoryRow
+                      key={r.id}
+                      r={r}
+                      grantsHref={r.status === 'done' ? `/grants?idea=${r.id}` : undefined}
+                      grantsDone={Boolean(grantByIdea[r.id])}
+                      onOpen={() => open(r.id)}
+                      onDelete={() => void remove(r)}
+                    />
+                  ))}
+                </div>
+              )}
+              <p className="mt-3 text-xs text-white/30">Deleting a report does not restore a free validation.</p>
+            </div>
+          </aside>
         </section>
 
-        <div className="mt-14 grid lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] gap-10 lg:gap-12 items-start">
-          <section id="validate" className="order-2 lg:order-1 scroll-mt-8">
+        <section id="validate" className="mx-auto mt-14 w-full max-w-5xl scroll-mt-8">
+          <div className="mb-6 text-center">
             <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30 mb-3">New validation</p>
-            <h2 className="text-xl font-semibold tracking-tight mb-5">
+            <h2 className="text-xl font-semibold tracking-tight">
               {remaining === 0 ? 'Free validations used' : 'New validation'}
             </h2>
-            {remaining === 0 ? (
-              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
-                <p className="text-sm text-white/55 leading-relaxed">
-                  All {FREE_IDEA_LIMIT} free reports are saved. Open one to read it, or send it to Grants.
-                </p>
-                <a href="#history" className="inline-flex items-center gap-2 mt-8 text-sm font-semibold text-white hover:text-white/70 transition-colors">
-                  Open your history <ArrowRight size={16} />
-                </a>
-              </div>
-            ) : (
-              <>
-                {remaining !== null && (
-                  <p className="mb-4 text-sm text-white/40">{remaining} free left</p>
-                )}
-                <IdeaForm key={formKey} initial={prefill} busy={busy} error={formError} blocked={blocked} onSubmit={submit} />
-              </>
-            )}
-          </section>
-
-          <section id="history" className="order-1 lg:order-2 lg:sticky lg:top-6 scroll-mt-8">
-            <div className="flex items-end justify-between gap-4 mb-4">
-              <div>
-                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Your validations</p>
-                <p className="mt-1 text-sm text-white/40">Saved on this account.</p>
-              </div>
-              {remaining !== null && (
-                <p className="text-xs font-mono uppercase tracking-widest text-white/50">{remaining} left</p>
-              )}
+          </div>
+          {remaining === 0 ? (
+            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 md:p-8 text-center">
+              <p className="text-sm text-white/55 leading-relaxed">
+                All {FREE_IDEA_LIMIT} free reports are saved. Open one to read it, or send it to Grants.
+              </p>
+              <a href="#history" className="inline-flex items-center gap-2 mt-8 text-sm font-semibold text-white hover:text-white/70 transition-colors">
+                Open your history <ArrowRight size={16} />
+              </a>
             </div>
-            {listError && <p role="alert" className="mb-4 text-sm text-red-500">{listError}</p>}
-            {reports === null ? (
-              <p className="text-sm text-white/30">Loading your reports…</p>
-            ) : reports.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-white/15 px-5 py-8">
-                <p className="text-base font-semibold tracking-tight">No reports yet</p>
-                <p className="mt-2 text-sm text-white/40">Finished reports show up here.</p>
-              </div>
-            ) : (
-              <div className="grid gap-3">
-                {reports.map(r => (
-                  <HistoryRow
-                    key={r.id}
-                    r={r}
-                    grantsHref={r.status === 'done' ? `/grants?idea=${r.id}` : undefined}
-                    grantsDone={Boolean(grantByIdea[r.id])}
-                    onOpen={() => open(r.id)}
-                    onDelete={() => void remove(r)}
-                  />
-                ))}
-              </div>
-            )}
-            <p className="mt-4 text-xs text-white/30">Deleting a report does not restore a free validation.</p>
-          </section>
-        </div>
+          ) : (
+            <IdeaForm key={formKey} initial={prefill} busy={busy} error={formError} blocked={blocked} onSubmit={submit} />
+          )}
+        </section>
       </main>
     </div>
   );
@@ -261,7 +270,7 @@ function Allowance({ used }: { used: number | null }) {
   const remaining = used === null ? null : Math.max(0, FREE_IDEA_LIMIT - used);
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-5">
+    <div>
       <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Free validations</p>
       <p className="mt-2 text-3xl font-light tracking-tight">
         {remaining === null ? (
@@ -306,7 +315,7 @@ function HistoryRow({ r, grantsHref, grantsDone, onOpen, onDelete }: { r: IdeaRe
   const verdict = r.verdict?.toLowerCase() ?? '';
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/25 transition-colors px-4 py-4">
+    <div className="border-b border-white/10 py-3 last:border-b-0">
       <div className="flex items-start gap-3">
         <button onClick={onOpen} className="flex-1 min-w-0 text-left">
           <span className="block text-base font-semibold tracking-tight">{title}</span>
