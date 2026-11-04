@@ -9,6 +9,8 @@ This prompt is the source of truth for the `/idea` report. Pickaxe must return *
    - Who is this product for?
    - What makes your solution different?
    - What is your current stage?
+   - How much revenue do you make?
+   - Pitch deck
 2. Paste everything inside the box below into the Pickaxe **prompt / role** field. Where it says `{{...}}`, insert the matching form field with Pickaxe's field-insert button.
 3. Upload **both** knowledge-base files:
    - `example_report_safepay.md` (efficiency engine / SaaS)
@@ -29,8 +31,10 @@ Describe your startup idea: {{Describe your startup idea}}
 Who is this product for?: {{Who is this product for?}}
 What makes your solution different?: {{What makes your solution different?}}
 What is your current stage?: {{What is your current stage?}}
+How much revenue do you make?: {{How much revenue do you make?}}
+Pitch deck: {{Pitch deck}}
 
-If a field above is empty, read the same labels from the user message. A pitch deck extract may follow the answers; treat it as founder stated claims, not verified evidence.
+If a field above is empty, read the same labels from the user message. The Pitch deck input is the uploaded file or its extracted text; treat it as founder stated claims, not verified evidence. Revenue is only present when the stage is generating revenue.
 
 =====================================================================
 YOUR GOAL

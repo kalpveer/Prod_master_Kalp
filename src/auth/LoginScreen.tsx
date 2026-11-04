@@ -3,8 +3,9 @@ import { ArrowRight, Eye, EyeOff, Moon, Sun } from 'lucide-react';
 import { getSupabase } from '../lib/supabase';
 import { useVentureTheme } from '../modules/venture/theme';
 import { useAuth } from './useAuth';
-import { grantsHref, ideaHref } from '../modules/venture/landingGate';
+import type { VentureTool } from '../modules/venture/landingGate';
 import VentureLabLogo from '../modules/venture/VentureLabLogo';
+import ToolSwitch from '../modules/venture/ToolSwitch';
 import { normalizePhone, normalizeUsername, validatePassword, validatePhone, validateUsername } from './redirect';
 
 type Mode = 'signin' | 'signup' | 'forgot';
@@ -53,7 +54,7 @@ const isCredentialFail = (message: string) => {
   return m.includes('incorrect') || m.includes('invalid login') || m.includes('invalid credentials') || m.includes('not found');
 };
 
-export default function LoginScreen({ title }: { title: string }) {
+export default function LoginScreen({ title, active = 'idea' }: { title: string; active?: VentureTool }) {
   const { signIn, signUp, requestPasswordReset, updatePassword, passwordRecovery } = useAuth();
   const { theme, toggle } = useVentureTheme();
   const [mode, setMode] = useState<Mode>('signin');
@@ -235,21 +236,24 @@ export default function LoginScreen({ title }: { title: string }) {
     <div className="h-dvh overflow-hidden bg-black text-white flex flex-col selection:bg-white selection:text-black relative">
       <div className="vl-auth-glow" style={{ width: 460, height: 460, top: -140, left: -120, background: '#d9d3c4', opacity: 0.55 }} />
       <div className="vl-auth-glow" style={{ width: 380, height: 380, right: -120, bottom: -80, background: '#8ea0ae', opacity: 0.4 }} />
-      <header className="relative z-10 shrink-0 flex items-center justify-between gap-4 px-6 md:px-12 py-4">
-        <VentureLabLogo
-          surface="dark"
-          showProductica
-          imgClassName="h-[18px] w-auto object-contain md:h-[21px]"
-        />
-        <div className="flex items-center gap-3">
-          <nav className="hidden sm:flex items-center gap-3 text-sm text-white/50">
-            <a href={ideaHref()} className="hover:text-white">Validate</a>
-            <a href={grantsHref()} className="hover:text-white">Grants</a>
-          </nav>
-          <button type="button" onClick={toggle} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center text-white/70 hover:text-white">
-            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-          <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">{title}</span>
+      <header className="vl-chrome relative z-10">
+        <div className="vl-chrome__bar">
+          <VentureLabLogo
+            surface={theme === 'dark' ? 'dark' : 'light'}
+            imgClassName="h-[20px] w-auto object-contain md:h-[22px]"
+          />
+          <ToolSwitch active={active} />
+          <div className="vl-chrome__end">
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label={theme === 'dark' ? 'Switch to light appearance' : 'Switch to dark appearance'}
+              className="vl-account"
+            >
+              {theme === 'dark' ? <Sun size={15} aria-hidden /> : <Moon size={15} aria-hidden />}
+              <span className="vl-account__who">{title}</span>
+            </button>
+          </div>
         </div>
       </header>
 

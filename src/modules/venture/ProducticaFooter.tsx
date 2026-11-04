@@ -1,4 +1,5 @@
 import { grantsHref, ideaHref, markWorkspaceOpen } from './landingGate';
+import { useVentureTheme } from './theme';
 import VentureLabLogo from './VentureLabLogo';
 
 const company = [
@@ -38,9 +39,11 @@ const toneStyles: Record<
   },
 };
 
-export default function ProducticaFooter({ tone = 'dark' }: { tone?: FooterTone }) {
-  const t = toneStyles[tone];
-  const logoSurface = tone === 'light' ? 'light' : 'dark';
+export default function ProducticaFooter({ tone }: { tone?: FooterTone }) {
+  const { theme } = useVentureTheme();
+  const resolved: FooterTone = tone ?? (theme === 'light' ? 'light' : 'dark');
+  const t = toneStyles[resolved];
+  const logoSurface = resolved === 'light' ? 'light' : 'dark';
 
   return (
     <footer className={t.shell}>
@@ -51,7 +54,7 @@ export default function ProducticaFooter({ tone = 'dark' }: { tone?: FooterTone 
               <a href="/" className="inline-flex items-center gap-2.5 shrink-0">
                 <img src="/8.png" alt="" className="h-8 w-8 rounded-md object-cover md:h-9 md:w-9" />
                 <span
-                  className={`text-sm font-semibold tracking-tight ${tone === 'light' ? 'text-neutral-900' : 'text-white'}`}
+                  className={`text-sm font-semibold tracking-tight ${resolved === 'light' ? 'text-neutral-900' : 'text-white'}`}
                 >
                   Productica
                 </span>
@@ -83,8 +86,8 @@ export default function ProducticaFooter({ tone = 'dark' }: { tone?: FooterTone 
               </li>
             </ul>
           </nav>
-          <FooterColumn title="Company" links={company} tone={tone} />
-          <FooterColumn title="Social" links={socials} external tone={tone} />
+          <FooterColumn title="Company" links={company} tone={resolved} />
+          <FooterColumn title="Social" links={socials} external tone={resolved} />
         </div>
 
         <p className={`mt-12 pt-6 text-xs font-mono ${t.copyright}`}>

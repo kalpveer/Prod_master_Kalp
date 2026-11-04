@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
     const audience = clean(body.audience, 1500);
     const different = clean(body.different, 3000);
     const stage = clean(body.stage, 80);
+    const revenue = clean(body.revenue, 200);
     const deckPath = clean(body.deckPath, 300);
     const deckName = clean(body.deckName, 200);
 
@@ -50,6 +51,9 @@ Deno.serve(async (req) => {
     if (audience.length < 3) return json({ error: 'Tell us who the product is for.' }, 400);
     if (different.length < 5) return json({ error: 'Tell us what makes your solution different.' }, 400);
     if (!STAGES.includes(stage)) return json({ error: 'Pick your current stage.' }, 400);
+    if (stage === 'Generating revenue' && revenue.length < 2) {
+      return json({ error: 'Say how much revenue you make, even roughly.' }, 400);
+    }
     if (deckPath && !new RegExp(`^${user.id}/[A-Za-z0-9._-]+\\.(pdf|pptx)$`, 'i').test(deckPath)) {
       return json({ error: 'That pitch deck upload is not valid.' }, 400);
     }
@@ -95,6 +99,7 @@ Deno.serve(async (req) => {
         audience,
         different,
         stage,
+        revenue: stage === 'Generating revenue' ? revenue : null,
         deck_path: deckPath || null,
         deck_name: deckName || null,
       })
@@ -108,7 +113,7 @@ Deno.serve(async (req) => {
       return json({ error: 'Could not start your report. Please try again.' }, 500);
     }
 
-    const job = runReport(row.id, user.id, { startupName, idea, audience, different, stage, deckPath, deckName }).catch((e) =>
+    const job = runReport(row.id, user.id, { startupName, idea, audience, different, stage, revenue, deckPath, deckName }).catch((e) =>
       console.error('[idea-generate] unhandled job error', e),
     );
     if (!keepAlive(job)) await job;
@@ -154,7 +159,7 @@ async function extractDeckText(buf: Uint8Array, fileName: string): Promise<strin
 async function runReport(
   id: string,
   userId: string,
-  a: { startupName: string; idea: string; audience: string; different: string; stage: string; deckPath: string; deckName: string },
+  a: { startupName: string; idea: string; audience: string; different: string; stage: string; revenue: string; deckPath: string; deckName: string },
 ) {
   const admin = getAdmin();
   const finish = async (patch: Record<string, unknown>) => {
@@ -164,15 +169,30 @@ async function runReport(
 
   try {
     let deckText = '';
+    let deckUrl = '';
     if (a.deckPath) {
-      try {
-        const { data, error } = await admin.storage.from(BUCKET).download(a.deckPath);
-        if (error || !data) throw error || new Error('empty download');
-        deckText = await extractDeckText(new Uint8Array(await data.arrayBuffer()), a.deckName || a.deckPath);
-      } catch (e) {
-        console.error('[idea-generate] deck read failed (continuing without it)', e);
-      }
+      const { data, error } = await admin.storage.from(BUCKET).download(a.deckPath);
+      if (error || !data) throw new PickaxeError('We could not read the pitch deck you uploaded. Try a smaller PDF or PPTX.');
+      deckText = await extractDeckText(new Uint8Array(await data.arrayBuffer()), a.deckName || a.deckPath);
+      const signed = await admin.storage.from(BUCKET).createSignedUrl(a.deckPath, 60 * 60);
+      if (!signed.error && signed.data?.signedUrl) deckUrl = signed.data.signedUrl;
+      if (!deckText && !deckUrl) throw new PickaxeError('We could not read the text of that pitch deck. Export it as a PDF and try again.');
     }
+
+    const deckForPickaxe = [
+      deckText,
+      deckUrl ? `Pitch deck file "${a.deckName}": ${deckUrl}` : '',
+    ].filter(Boolean).join('\n\n');
+
+    const inputs: Record<string, string> = {
+      'Name of your startup': a.startupName,
+      'Describe your startup idea': a.idea,
+      'Who is this product for?': a.audience,
+      'What makes your solution different?': a.different,
+      'What is your current stage?': a.stage,
+    };
+    if (a.stage === 'Generating revenue' && a.revenue) inputs['How much revenue do you make?'] = a.revenue;
+    if (deckForPickaxe) inputs['Pitch deck'] = deckForPickaxe;
 
     const message = [
       `Name of your startup: ${a.startupName}`,
@@ -180,10 +200,21 @@ async function runReport(
       `Who is this product for?: ${a.audience}`,
       `What makes your solution different?: ${a.different}`,
       `What is your current stage?: ${a.stage}`,
-      deckText ? `\nPitch deck provided by the founder (text extracted from "${a.deckName}"; treat it as founder-stated claims, not verified evidence):\n${deckText}` : '',
+      a.stage === 'Generating revenue' && a.revenue ? `How much revenue do you make?: ${a.revenue}` : '',
+      deckText
+        ? `\nPitch deck (attached as the "Pitch deck" form input; text from "${a.deckName}"; treat as founder-stated claims, not verified evidence):\n${deckText}`
+        : deckUrl
+          ? `\nPitch deck file attached as the "Pitch deck" form input (${a.deckName}): ${deckUrl}`
+          : '',
     ].filter(Boolean).join('\n');
 
-    const markdown = await completePickaxe(Deno.env.get('PICKAXE_DEPLOYMENT_ID'), message, userId, PICKAXE_TIMEOUT_MS);
+    const markdown = await completePickaxe(
+      Deno.env.get('PICKAXE_DEPLOYMENT_ID'),
+      message,
+      userId,
+      PICKAXE_TIMEOUT_MS,
+      { inputs },
+    );
     const meta = readMeta(markdown);
     await finish({ status: 'done', markdown, title: meta.title || a.startupName, verdict: meta.verdict, iq: meta.iq, error: null });
   } catch (e) {

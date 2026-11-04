@@ -1,52 +1,72 @@
-import type { ReactNode } from 'react';
-import { LogOut, Moon, Sun } from 'lucide-react';
-import { grantsHref, ideaHref, markWorkspaceOpen } from './venture/landingGate';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, LogOut, Moon, Sun } from 'lucide-react';
+import type { VentureTool } from './venture/landingGate';
 import VentureLabLogo from './venture/VentureLabLogo';
+import ToolSwitch from './venture/ToolSwitch';
 import { useVentureTheme } from './venture/theme';
 
 interface Props {
-  active: 'idea' | 'grants';
+  active: VentureTool;
   account?: string | null;
   onSignOut: () => void;
-  children?: ReactNode;
 }
 
-const tab = (on: boolean) =>
-  `rounded-full px-3 py-1.5 transition-colors ${on ? 'bg-white text-black' : 'text-white/55 hover:text-white'}`;
-
-export default function ToolChrome({ active, account, onSignOut, children }: Props) {
+export default function ToolChrome({ active, account, onSignOut }: Props) {
   const { theme, toggle } = useVentureTheme();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const who = account?.trim() || 'Account';
+  const initial = (who.match(/[A-Za-z0-9]/) || ['A'])[0].toUpperCase();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/10 bg-black/80 backdrop-blur-xl">
-      <div className="max-w-6xl mx-auto px-4 md:px-8 h-16 flex items-center gap-4">
+    <header className="vl-chrome">
+      <div className="vl-chrome__bar">
         <VentureLabLogo
           surface={theme === 'dark' ? 'dark' : 'light'}
-          showProductica
-          imgClassName="h-[18px] w-auto object-contain md:h-[21px]"
+          imgClassName="h-[20px] w-auto object-contain md:h-[22px]"
         />
-
-        <nav className="flex items-center gap-1 text-sm">
-          <a href={ideaHref()} onClick={markWorkspaceOpen} aria-current={active === 'idea' ? 'page' : undefined} className={tab(active === 'idea')}>Validate</a>
-          <a href={grantsHref()} onClick={markWorkspaceOpen} aria-current={active === 'grants' ? 'page' : undefined} className={tab(active === 'grants')}>Grants</a>
-        </nav>
-
-        <div className="ml-auto flex items-center gap-2 md:gap-3 min-w-0">
-          <div className="hidden lg:flex items-center gap-4 text-xs text-white/45">
-            {children}
-          </div>
-          <span className="hidden md:block max-w-[140px] truncate text-xs text-white/45">{account}</span>
+        <ToolSwitch active={active} />
+        <div className="vl-chrome__end" ref={menuRef}>
           <button
             type="button"
-            onClick={toggle}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center text-white/70 hover:text-white"
+            className="vl-account"
+            aria-expanded={open}
+            aria-haspopup="menu"
+            onClick={() => setOpen(v => !v)}
           >
-            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            <span className="vl-account__mark" aria-hidden>{initial}</span>
+            <span className="vl-account__who">{who}</span>
+            <ChevronDown size={14} aria-hidden />
           </button>
-          <button onClick={onSignOut} className="flex items-center gap-1.5 text-xs text-white/55 hover:text-white">
-            <LogOut size={14} /> <span className="hidden sm:inline">Sign out</span>
-          </button>
+          {open && (
+            <div className="vl-account__menu" role="menu">
+              <button type="button" role="menuitem" onClick={() => { toggle(); setOpen(false); }}>
+                {theme === 'dark' ? <Sun size={15} aria-hidden /> : <Moon size={15} aria-hidden />}
+                {theme === 'dark' ? 'Light appearance' : 'Dark appearance'}
+              </button>
+              <button type="button" role="menuitem" onClick={() => { setOpen(false); onSignOut(); }}>
+                <LogOut size={15} aria-hidden />
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

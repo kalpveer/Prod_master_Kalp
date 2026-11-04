@@ -43,7 +43,7 @@ export default function AuthGate({ title, landing, children }: { title: string; 
         <span className="w-5 h-5 rounded-full border-2 border-white/20 border-t-white animate-spin" aria-label="Loading" />
       </div>
   ) : !session || passwordRecovery ? (
-    <LoginScreen title={title} />
+    <LoginScreen title={title} active={landing === 'grants' ? 'grants' : 'idea'} />
   ) : (
     <>{children}</>
   );

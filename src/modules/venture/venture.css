@@ -26,16 +26,17 @@
 }
 
 .vl ::selection {
-  background: var(--vl-fg);
-  color: var(--vl-btn-fg);
+  background: color-mix(in srgb, var(--vl-fg) 22%, transparent);
+  color: var(--vl-fg);
 }
 
 .vl.bg-black,
 .vl .bg-black { background-color: var(--vl-bg) !important; }
 .vl .bg-black\/80 { background-color: color-mix(in srgb, var(--vl-bg) 88%, transparent) !important; }
-.vl .text-white { color: var(--vl-fg) !important; }
-.vl .text-black { color: var(--vl-btn-fg) !important; }
-.vl .bg-white { background-color: var(--vl-btn) !important; }
+.vl .text-white,
+.vl .text-white\/90,
+.vl .text-white\/85,
+.vl .text-white\/95 { color: var(--vl-fg) !important; }
 .vl .text-white\/20,
 .vl .text-white\/25,
 .vl .text-white\/30,
@@ -49,9 +50,12 @@
 .vl .text-white\/70,
 .vl .text-white\/80 { color: var(--vl-fg) !important; opacity: 0.82; }
 .vl .bg-white\/\[0\.03\],
+.vl .bg-white\/\[0\.04\],
 .vl .bg-white\/\[0\.05\],
 .vl .bg-white\/5,
-.vl .bg-white\/10 { background-color: var(--vl-card) !important; }
+.vl .bg-white\/10,
+.vl .bg-white\/20 { background-color: color-mix(in srgb, var(--vl-fg) 6%, transparent) !important; }
+.vl .border-white,
 .vl .border-white\/10,
 .vl .border-white\/15,
 .vl .border-white\/20,
@@ -60,19 +64,40 @@
 .vl .border-white\/40 { border-color: var(--vl-fg) !important; }
 .vl .bg-white\/10.border-white\/40,
 .vl .border-white\/40.bg-white\/10 {
-  background: var(--vl-fg) !important;
-  color: var(--vl-btn-fg) !important;
+  background: color-mix(in srgb, var(--vl-fg) 10%, transparent) !important;
+  color: var(--vl-fg) !important;
   border-color: var(--vl-fg) !important;
+}
+
+/* Solid CTAs: paper-on-ink in dark, ink-on-paper in light. Never a blank black pill. */
+.vl-solid,
+.vl .bg-white.text-black {
+  background: var(--vl-fg) !important;
+  color: var(--vl-bg) !important;
+  border-color: var(--vl-fg) !important;
+  box-shadow: none !important;
+}
+.vl-solid svg,
+.vl .bg-white.text-black svg {
+  color: inherit !important;
+  stroke: currentColor;
+}
+.vl-solid:hover,
+.vl .hover\:bg-white\/90:hover {
+  filter: none;
+  opacity: 0.92;
 }
 .vl .hover\:text-white:hover,
 .vl .hover\:text-white\/70:hover { color: var(--vl-fg) !important; opacity: 1; }
-.vl .hover\:bg-white\/90:hover { filter: brightness(0.92); }
-.vl .hover\:bg-white\/5:hover { background-color: var(--vl-card) !important; }
+.vl .hover\:bg-white\/5:hover { background-color: color-mix(in srgb, var(--vl-fg) 8%, transparent) !important; }
 .vl .hover\:border-white\/25:hover,
 .vl .hover\:border-white\/30:hover { border-color: var(--vl-fg) !important; }
 .vl .placeholder\:text-white\/20::placeholder { color: var(--vl-faint); }
 .vl .focus\:border-white\/80:focus { border-color: var(--vl-fg) !important; }
 .vl .border-dashed { border-color: var(--vl-line) !important; }
+.vl[data-theme='light'] [class*='shadow-[0_0_20px_rgba(255'] {
+  box-shadow: none !important;
+}
 
 /* The first-visit hero stays cinematic even in light mode. */
 .vl .vl-hero .bg-black { background-color: #000 !important; }
@@ -298,4 +323,247 @@
   background: color-mix(in srgb, #fff 58%, transparent);
   border-color: color-mix(in srgb, #fff 72%, transparent);
   box-shadow: 0 24px 60px rgba(22, 22, 22, 0.08);
+}
+
+/* Workspace bar: logo | two-mode switch | account. The switch is the only choice. */
+.vl-chrome {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--vl-bg);
+  border-bottom: 1px solid var(--vl-line);
+}
+.vl-chrome__bar {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+.vl-switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  min-width: 17.5rem;
+  padding: 3px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--vl-fg) 7%, transparent);
+}
+.vl-switch__pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 9px;
+  background: var(--vl-card);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--vl-fg) 6%, transparent);
+  transition: transform 180ms ease;
+  pointer-events: none;
+}
+.vl-switch__pill.is-right {
+  transform: translateX(100%);
+}
+.vl-switch__item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+  padding: 5px 16px;
+  border-radius: 9px;
+  color: var(--vl-muted);
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none;
+}
+.vl-switch__item:hover {
+  color: var(--vl-fg);
+}
+.vl-switch__item.is-on {
+  color: var(--vl-fg);
+}
+.vl-switch__item:focus-visible,
+.vl-account:focus-visible {
+  outline: 2px solid var(--vl-fg);
+  outline-offset: 2px;
+}
+.vl-switch__name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.vl-switch__job {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--vl-faint);
+}
+.vl-switch__item.is-on .vl-switch__job {
+  color: var(--vl-muted);
+}
+.vl-chrome__end {
+  position: relative;
+  justify-self: end;
+}
+.vl-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 200px;
+  padding: 4px 8px 4px 4px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--vl-fg);
+  font-size: 13px;
+  cursor: pointer;
+}
+.vl-account:hover,
+.vl-account[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--vl-fg) 6%, transparent);
+}
+.vl-account__mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--vl-fg) 10%, transparent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.vl-account__who {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vl-account__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 40;
+  min-width: 200px;
+  padding: 6px;
+  border: 1px solid var(--vl-line);
+  border-radius: 10px;
+  background: var(--vl-card);
+  box-shadow: 0 12px 32px color-mix(in srgb, #000 28%, transparent);
+}
+.vl-account__menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--vl-fg);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.vl-account__menu button:hover {
+  background: color-mix(in srgb, var(--vl-fg) 7%, transparent);
+}
+@media (max-width: 640px) {
+  .vl-chrome__bar { width: calc(100% - 20px); gap: 8px; }
+  .vl-switch { min-width: 0; width: min(220px, 54vw); }
+  .vl-switch__item { min-height: 36px; padding: 6px 10px; }
+  .vl-switch__job { display: none; }
+  .vl-account { max-width: 44px; padding-right: 4px; }
+  .vl-account__who,
+  .vl-account svg { display: none; }
+}
+
+.vl-inputs {
+  width: min(320px, 38vw);
+  flex: none;
+  align-self: stretch;
+  min-height: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px 18px 28px;
+  background: var(--vl-bg);
+  color: var(--vl-fg);
+  border-right: 1px solid var(--vl-line);
+}
+.vl-inputs__kicker {
+  margin: 0 0 14px;
+  font-size: 11px;
+  color: var(--vl-faint);
+}
+.vl-inputs__row {
+  margin: 0 0 14px;
+}
+.vl-inputs__row dt {
+  font-size: 11px;
+  color: var(--vl-faint);
+  margin-bottom: 4px;
+}
+.vl-inputs__row dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+@media (max-width: 800px) {
+  .vl-inputs {
+    position: absolute;
+    inset: 48px 0 auto 0;
+    width: auto;
+    height: auto;
+    max-height: min(42vh, 100%);
+    z-index: 2;
+    border-right: 0;
+    border-bottom: 1px solid var(--vl-line);
+  }
+}
+
+/* Report overlay chrome. Named separately from .vl-report markdown so link styles cannot paint these buttons. */
+.vl-overlay {
+  background: var(--vl-bg);
+  color: var(--vl-fg);
+}
+.vl-overlay__top,
+.vl-overlay__share {
+  border-bottom: 1px solid var(--vl-line);
+  color: var(--vl-fg);
+}
+.vl-overlay__chip {
+  color: var(--vl-fg);
+  background: transparent;
+  border: 1px solid var(--vl-line);
+}
+.vl-overlay__chip:hover {
+  border-color: color-mix(in srgb, var(--vl-fg) 28%, transparent);
+}
+.vl-overlay__chip.is-on {
+  background: color-mix(in srgb, var(--vl-fg) 8%, transparent);
+  border-color: color-mix(in srgb, var(--vl-fg) 28%, transparent);
+}
+.vl-overlay a.vl-overlay__chip {
+  color: var(--vl-fg) !important;
+  text-decoration: none;
+  font-weight: 600;
+}
+.vl-overlay__field {
+  background: var(--vl-card);
+  color: var(--vl-fg);
+  border: 1px solid var(--vl-line);
+  caret-color: var(--vl-fg);
+}
+.vl-overlay__field::selection {
+  background: color-mix(in srgb, var(--vl-fg) 18%, transparent);
+  color: var(--vl-fg);
 }

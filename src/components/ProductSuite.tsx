@@ -39,7 +39,7 @@ const products = [
   },
   {
     id: 'agents',
-    title: 'Agents',
+    title: 'Productica Team',
     eyebrow: 'Productica Teams',
     body:
       'A synchronized team of AI agents for the messy middle of venture building — from first validation through GTM, pitch prep, and operational planning.',
@@ -49,7 +49,7 @@ const products = [
       'Same intelligence layer that powers Productica reports',
     ],
     meta: 'agents.productica.in',
-    cta: 'Open Agents',
+    cta: 'Open Productica Team',
     href: 'https://agents.productica.in/',
     image: '/products/agents.jpg',
     external: true,

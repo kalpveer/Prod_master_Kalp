@@ -63,6 +63,32 @@ export const ideaApi = {
   },
 
   /** Finished validations charged to this account. Deleting a report does not lower it. */
+  async enableShare(id: string): Promise<string> {
+    const { data, error } = await getSupabase().rpc('enable_idea_share', { report_id: id });
+    if (error || !data) throw new Error(error?.message || 'Could not create a share link.');
+    return String(data);
+  },
+
+  async getShared(token: string): Promise<{
+    title: string | null;
+    startup_name: string | null;
+    idea: string;
+    audience: string;
+    different: string;
+    stage: string;
+    revenue: string | null;
+    deck_name: string | null;
+    markdown: string;
+    created_at: string;
+    verdict: string | null;
+    iq: number | null;
+  } | null> {
+    const { data, error } = await getSupabase().rpc('get_shared_idea_report', { token });
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(data) ? data[0] : data;
+    return row ?? null;
+  },
+
   async quota(): Promise<{ used: number; limit: number }> {
     const fromTable = await getSupabase()
       .from('account_quotas')
@@ -77,6 +103,7 @@ export const ideaApi = {
   async generate(answers: IdeaAnswers, deck?: UploadedDeck | null): Promise<{ id: string }> {
     const json = await invokeFunction<{ id?: string }>('idea-generate', {
       ...answers,
+      revenue: answers.revenue || '',
       deckPath: deck?.path,
       deckName: deck?.name,
     });

@@ -11,6 +11,7 @@ export interface Workspace {
   idea?: string;
   audience?: string;
   different?: string;
+  revenue?: string;
 }
 
 export function readWorkspace(): Workspace {

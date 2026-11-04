@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import DeckDropzone from './DeckDropzone';
-import { STAGES, type IdeaAnswers } from './types';
+import { REVENUE_STAGE, STAGES, type IdeaAnswers } from './types';
 
 export type FormBusy = null | 'uploading' | 'starting';
 
@@ -37,7 +37,7 @@ const underline =
 
 // Startup name, the four validation questions, and the optional pitch deck live in one window.
 export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Props) {
-  const [a, setA] = useState<IdeaAnswers>({ startupName: '', idea: '', audience: '', different: '', stage: '', ...initial });
+  const [a, setA] = useState<IdeaAnswers>({ startupName: '', idea: '', audience: '', different: '', stage: '', revenue: '', ...initial });
   const [deck, setDeck] = useState<File | null>(null);
   const [touched, setTouched] = useState(false);
   const disabled = busy !== null || Boolean(blocked);
@@ -49,6 +49,7 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
     audience: a.audience.trim().length < MIN.audience ? 'Tell us who this is for.' : '',
     different: a.different.trim().length < MIN.different ? 'Tell us what makes it different.' : '',
     stage: a.stage ? '' : 'Pick your current stage.',
+    revenue: a.stage === REVENUE_STAGE && a.revenue.trim().length < 2 ? 'Say how much you make, even roughly.' : '',
   };
   const valid = !Object.values(problems).some(Boolean);
 
@@ -62,6 +63,7 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
       audience: a.audience.trim(),
       different: a.different.trim(),
       stage: a.stage,
+      revenue: a.stage === REVENUE_STAGE ? a.revenue.trim() : '',
     }, deck);
   };
 
@@ -111,7 +113,7 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
             const sel = a.stage === s.label;
             return (
               <button
-                key={s.label} type="button" role="radio" aria-checked={sel} disabled={disabled} onClick={() => set('stage')(s.label)} title={s.hint}
+                key={s.label} type="button" role="radio" aria-checked={sel} disabled={disabled} onClick={() => setA(p => ({ ...p, stage: s.label, revenue: s.label === REVENUE_STAGE ? p.revenue : '' }))} title={s.hint}
                 className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all active:scale-[0.97] disabled:pointer-events-none ${
                   sel ? 'border-white/40 bg-white/10 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]' : 'border-white/10 bg-white/[0.03] text-white/60 hover:border-white/25 hover:text-white'
                 }`}
@@ -124,7 +126,21 @@ export default function IdeaForm({ initial, busy, error, blocked, onSubmit }: Pr
         {showErr('stage')}
       </Field>
 
-      <Field n="06" label="Pitch deck" hint="Optional. Used in the report if you add one." optional>
+      {a.stage === REVENUE_STAGE && (
+        <div className="rounded-2xl border border-white/15 bg-white/[0.04] p-5 md:p-6">
+          <Field n="06" label="Revenue" hint="Unlocked because you are generating revenue. How much you make now — a range or monthly figure is fine.">
+            <input
+              value={a.revenue} onChange={e => set('revenue')(e.target.value)} disabled={disabled} maxLength={200}
+              placeholder="e.g. ₹40,000 a month, or ₹8 lakh last year"
+              className={underline}
+              autoFocus
+            />
+            {showErr('revenue')}
+          </Field>
+        </div>
+      )}
+
+      <Field n={a.stage === REVENUE_STAGE ? '07' : '06'} label="Pitch deck" hint="Optional. We attach the file so the report can read your slides." optional>
         <DeckDropzone file={deck} onChange={setDeck} disabled={disabled} />
       </Field>
 

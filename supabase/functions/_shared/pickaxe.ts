@@ -28,6 +28,7 @@ export async function completePickaxe(
   message: string,
   userId: string,
   timeoutMs = DEFAULT_TIMEOUT_MS,
+  extras?: { inputs?: Record<string, string> },
 ): Promise<string> {
   if (!token) throw new PickaxeError('The report engine is not configured.');
 
@@ -37,7 +38,11 @@ export async function completePickaxe(
     const r = await fetch(PICKAXE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ message, userId }),
+      body: JSON.stringify({
+        message,
+        userId,
+        ...(extras?.inputs && Object.keys(extras.inputs).length ? { inputs: extras.inputs } : {}),
+      }),
       signal: ctrl.signal,
     });
     const text = await r.text();

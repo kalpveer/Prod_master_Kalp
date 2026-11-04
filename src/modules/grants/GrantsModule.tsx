@@ -265,9 +265,7 @@ export default function GrantsModule() {
         />
       )}
 
-      <ToolChrome active="grants" account={displayName} onSignOut={() => void signOut()}>
-        <a href="#match" className="text-white/40 hover:text-white transition-colors">New match</a>
-      </ToolChrome>
+      <ToolChrome active="grants" account={displayName} onSignOut={() => void signOut()} />
 
       <main className="max-w-6xl mx-auto px-6 md:px-12 pt-8 pb-28">
         <section className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">

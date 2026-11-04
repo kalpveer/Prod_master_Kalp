@@ -79,7 +79,14 @@ export default function ReportView({ id, onBack, onRetry }: Props) {
 
   if (report === null) return <Message title="Report not found" body="It may have been deleted." onBack={onBack} />;
 
-  const answers: IdeaAnswers = { startupName: report.startup_name, idea: report.idea, audience: report.audience, different: report.different, stage: report.stage };
+  const answers: IdeaAnswers = {
+    startupName: report.startup_name,
+    idea: report.idea,
+    audience: report.audience,
+    different: report.different,
+    stage: report.stage,
+    revenue: report.revenue || '',
+  };
   const startedAt = new Date(report.created_at).getTime();
 
   if (report.status === 'running') {
@@ -93,5 +100,14 @@ export default function ReportView({ id, onBack, onRetry }: Props) {
     return <Message title="We couldn’t finish this report" body={report.error || 'Please try again.'} onBack={onBack} action={{ label: 'Edit and try again', run: () => onRetry(answers) }} />;
   }
 
-  return <ReportFrame markdown={report.markdown} grantsHref={`/grants?idea=${report.id}`} onBack={onBack} />;
+  return (
+    <ReportFrame
+      markdown={report.markdown}
+      grantsHref={`/grants?idea=${report.id}`}
+      reportId={report.id}
+      answers={answers}
+      deckName={report.deck_name}
+      onBack={onBack}
+    />
+  );
 }

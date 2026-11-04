@@ -18,6 +18,7 @@ import CookieConsent from './components/CookieConsent';
 
 // App modules (/idea, ...) are code-split: the marketing site never loads them or Supabase.
 const ModuleHost = lazy(() => import('./modules/ModuleHost'));
+const ShareReport = lazy(() => import('./modules/idea/ShareReport'));
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -156,6 +157,13 @@ function App() {
         return;
       }
 
+      if (path.startsWith('/share/')) {
+        e.preventDefault();
+        go(next);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        return;
+      }
+
       const appModule = findModule(path);
       if (appModule) {
         e.preventDefault();
@@ -227,6 +235,10 @@ function App() {
         <Events />
       ) : currentPath === '/blogs' ? (
         <Blogs />
+      ) : currentPath.startsWith('/share/') ? (
+        <Suspense fallback={<div className="min-h-screen bg-black" />}>
+          <ShareReport token={decodeURIComponent(currentPath.slice('/share/'.length).split('/')[0] || '')} />
+        </Suspense>
       ) : findModule(currentPath) ? (
         <Suspense fallback={<div className="min-h-screen bg-black" />}>
           <ModuleHost module={findModule(currentPath)!} />

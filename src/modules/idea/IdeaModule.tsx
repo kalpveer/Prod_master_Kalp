@@ -65,6 +65,7 @@ export default function IdeaModule() {
       audience: ws.audience || '',
       different: ws.different || '',
       stage: ws.stage || '',
+      revenue: ws.revenue || '',
     });
     setFormKey(k => k + 1);
   }, []);
@@ -134,6 +135,7 @@ export default function IdeaModule() {
         audience: answers.audience,
         different: answers.different,
         stage: answers.stage,
+        revenue: answers.revenue,
       });
       setPrefill(undefined);
       setFormKey(k => k + 1);
@@ -178,10 +180,7 @@ export default function IdeaModule() {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
-      <ToolChrome active="idea" account={displayName} onSignOut={() => void signOut()}>
-        <a href="#validate" className="text-white/40 hover:text-white transition-colors">New validation</a>
-        <a href="#history" className="text-white/40 hover:text-white transition-colors">History</a>
-      </ToolChrome>
+      <ToolChrome active="idea" account={displayName} onSignOut={() => void signOut()} />
 
       <main className="max-w-6xl mx-auto px-6 md:px-12 pt-8 pb-28">
         <section className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">

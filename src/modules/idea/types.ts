@@ -4,6 +4,8 @@ export interface IdeaAnswers {
   audience: string;
   different: string;
   stage: string;
+  /** Only asked when stage is Generating revenue. */
+  revenue: string;
 }
 
 export type ReportStatus = 'running' | 'done' | 'failed';
@@ -26,8 +28,10 @@ export interface IdeaReportSummary {
 export interface IdeaReport extends IdeaReportSummary {
   audience: string;
   different: string;
+  revenue: string | null;
   deck_path: string | null;
   markdown: string | null;
+  share_id: string | null;
 }
 
 export const STAGES = [
@@ -37,6 +41,8 @@ export const STAGES = [
   { label: 'Early users', hint: 'A few people are using it' },
   { label: 'Generating revenue', hint: 'Customers are paying' },
 ] as const;
+
+export const REVENUE_STAGE = 'Generating revenue';
 
 /** Free validations saved on the account. Keep in sync with FREE_LIMIT in supabase/functions/idea-generate. */
 export const FREE_IDEA_LIMIT = 3;

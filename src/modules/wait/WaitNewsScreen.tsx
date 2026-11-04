@@ -44,7 +44,7 @@ export default function WaitNewsScreen({ eyebrow, title, note, phases, startedAt
                 return (
                   <li key={p} className={`flex items-center gap-3 text-sm transition-colors ${done ? 'text-white/60' : active ? 'text-white' : 'text-white/20'}`}>
                     <span className={`w-5 h-5 rounded-full border flex items-center justify-center ${done ? 'bg-white text-black border-white' : active ? 'border-white/60' : 'border-white/15'}`}>
-                      {done ? <Check size={12} /> : active ? <motion.span className="w-1.5 h-1.5 rounded-full bg-white" animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} /> : null}
+                      {done ? <Check size={12} /> : active ? <motion.span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--vl-fg)' }} animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} /> : null}
                     </span>
                     {p}
                   </li>
