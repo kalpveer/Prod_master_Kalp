@@ -1,0 +1,5 @@
+[functions.idea-generate]
+verify_jwt = true
+
+[functions.grants-match]
+verify_jwt = true

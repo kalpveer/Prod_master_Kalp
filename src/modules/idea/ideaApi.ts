@@ -1,3 +1,4 @@
+import { invokeFunction } from '../../lib/invokeFunction';
 import { getSupabase } from '../../lib/supabase';
 import { DECK_MAX_BYTES, type IdeaAnswers, type IdeaReport, type IdeaReportSummary } from './types';
 
@@ -25,7 +26,7 @@ export interface UploadedDeck {
 }
 
 // All reads/deletes go straight to Supabase and are protected by row-level security (own rows only).
-// Writes happen on the server (api/idea/generate) so users cannot forge reports or skip the limits.
+// Starts go through the idea-generate Edge Function so users cannot forge reports or skip the limits.
 export const ideaApi = {
   async list(): Promise<IdeaReportSummary[]> {
     const { data, error } = await getSupabase()
@@ -68,32 +69,18 @@ export const ideaApi = {
       .select('used, free_limit')
       .eq('module', 'idea')
       .maybeSingle();
-    if (!fromTable.error && fromTable.data) {
-      return { used: Number(fromTable.data.used) || 0, limit: Number(fromTable.data.free_limit) || 3 };
-    }
-
-    const { data } = await getSupabase().auth.getSession();
-    const token = data.session?.access_token;
-    if (!token) throw new Error('Your session has expired. Please sign in again.');
-    const r = await fetch('/api/idea/generate', { headers: { Authorization: `Bearer ${token}` } });
-    const json = await r.json().catch(() => ({}));
-    if (!r.ok || typeof json.used !== 'number') throw new Error(json.error || 'Could not check your free validations.');
-    return { used: json.used as number, limit: Number(json.limit) || 3 };
+    if (fromTable.error || !fromTable.data) throw new Error(fromTable.error?.message || 'Could not check your free validations.');
+    return { used: Number(fromTable.data.used) || 0, limit: Number(fromTable.data.free_limit) || 3 };
   },
 
-  /** Starts a report. Resolves as soon as the server has accepted it; generation continues in the background. */
+  /** Starts a report. Resolves as soon as Supabase has accepted it; Pickaxe continues in the background. */
   async generate(answers: IdeaAnswers, deck?: UploadedDeck | null): Promise<{ id: string }> {
-    const { data } = await getSupabase().auth.getSession();
-    const token = data.session?.access_token;
-    if (!token) throw new Error('Your session has expired. Please sign in again.');
-
-    const r = await fetch('/api/idea/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ...answers, deckPath: deck?.path, deckName: deck?.name }),
+    const json = await invokeFunction<{ id?: string }>('idea-generate', {
+      ...answers,
+      deckPath: deck?.path,
+      deckName: deck?.name,
     });
-    const json = await r.json().catch(() => ({}));
-    if (!r.ok || !json.id) throw new Error(json.error || 'Something went wrong starting your report.');
-    return { id: json.id as string };
+    if (!json.id) throw new Error('Something went wrong starting your report.');
+    return { id: json.id };
   },
 };

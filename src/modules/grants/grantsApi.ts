@@ -1,3 +1,4 @@
+import { invokeFunction } from '../../lib/invokeFunction';
 import { getSupabase } from '../../lib/supabase';
 import type { GrantInput, GrantMatch, VentureAnswers } from './catalog';
 
@@ -19,13 +20,6 @@ export interface GrantRunSummary {
 
 const RUN_COLUMNS = 'id,created_at,venture,stage,sector,state,applicant,idea_report_id,ready_count,matches';
 
-async function accessToken() {
-  const { data } = await getSupabase().auth.getSession();
-  const token = data.session?.access_token;
-  if (!token) throw new Error('Your session has expired. Please sign in again.');
-  return token;
-}
-
 export const grantsApi = {
   async list(): Promise<GrantRunSummary[]> {
     const { data, error } = await getSupabase()
@@ -43,15 +37,12 @@ export const grantsApi = {
   },
 
   async match(input: GrantInput, ideaReportId?: string | null): Promise<{ id: string; matches: GrantMatch[]; report: string }> {
-    const token = await accessToken();
-    const r = await fetch('/api/grants/match', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ...input, ideaReportId: ideaReportId || undefined }),
+    const json = await invokeFunction<{ id?: string; matches?: GrantMatch[]; report?: string }>('grants-match', {
+      ...input,
+      ideaReportId: ideaReportId || undefined,
     });
-    const json = await r.json().catch(() => ({}));
-    if (!r.ok || !json.id) throw new Error(json.error || 'Could not match grants for this venture.');
-    return { id: json.id as string, matches: (json.matches ?? []) as GrantMatch[], report: String(json.report || '') };
+    if (!json.id) throw new Error('Could not match grants for this venture.');
+    return { id: json.id, matches: json.matches ?? [], report: String(json.report || '') };
   },
 };
 

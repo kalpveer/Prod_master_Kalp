@@ -1,16 +1,12 @@
-/* eslint-disable */
-// GET  /api/grants/match   quota
-// POST /api/grants/match   AI grant match via Pickaxe, then save the shortlist
-import { requireUser } from '../_lib/auth.js';
-import { ConfigError, getAdmin } from '../_lib/supabaseAdmin.js';
-import { parseGrantResult } from '../_lib/grantMatch.js';
-import { completePickaxe, PickaxeError } from '../_lib/pickaxe.js';
-import { readQuota } from '../_lib/quotas.js';
+import { corsHeaders, json } from '../_shared/cors.ts';
+import { ConfigError, getAdmin, requireUser } from '../_shared/admin.ts';
+import { completePickaxe, PickaxeError } from '../_shared/pickaxe.ts';
+import { parseGrantResult } from '../_shared/grantMatch.ts';
 
 const STAGES = ['Just an idea', 'Researching & validating', 'Building a prototype', 'Early users', 'Generating revenue'];
 const SECTORS = ['Software', 'AI / deep tech', 'Hardware', 'Climate / energy', 'Health / biotech', 'Agriculture', 'Education', 'Consumer', 'Social impact', 'Other'];
 const STATES = ['Gujarat', 'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Delhi', 'Telangana', 'Another Indian state', 'Outside India'];
-const APPLICANTS = {
+const APPLICANTS: Record<string, string> = {
   unregistered: 'Not registered yet',
   startup: 'Registered startup',
   student: 'Student founder',
@@ -19,22 +15,17 @@ const APPLICANTS = {
 };
 
 const clean = (v: unknown, max: number) => String(v ?? '').replace(/\u0000/g, '').trim().slice(0, max);
-const safeJson = (s: string) => { try { return JSON.parse(s); } catch { return null; } };
 
-export default async function handler(req: any, res: any) {
-  if (req.method !== 'POST' && req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
   try {
     const user = await requireUser(req);
-    if (!user) return res.status(401).json({ error: 'Please sign in to continue.' });
+    if (!user) return json({ error: 'Please sign in to continue.' }, 401);
     const admin = getAdmin();
+    const body = await req.json().catch(() => ({}));
 
-    if (req.method === 'GET') {
-      const quota = await readQuota(admin, user.id, 'grants');
-      return res.status(200).json({ used: quota.used, limit: quota.limit });
-    }
-
-    const body = typeof req.body === 'string' ? safeJson(req.body) || {} : req.body || {};
     const venture = clean(body.venture, 400);
     const stage = clean(body.stage, 80);
     const sector = clean(body.sector, 80);
@@ -46,11 +37,11 @@ export default async function handler(req: any, res: any) {
     const audience = clean(body.audience, 1500);
     const different = clean(body.different, 3000);
 
-    if (venture.length < 8) return res.status(400).json({ error: 'Name the venture in a few words.' });
-    if (!STAGES.includes(stage)) return res.status(400).json({ error: 'Pick the stage.' });
-    if (!SECTORS.includes(sector)) return res.status(400).json({ error: 'Pick a sector.' });
-    if (!STATES.includes(state)) return res.status(400).json({ error: 'Pick where it is based.' });
-    if (!APPLICANTS[applicant]) return res.status(400).json({ error: 'Pick who is applying.' });
+    if (venture.length < 8) return json({ error: 'Name the venture in a few words.' }, 400);
+    if (!STAGES.includes(stage)) return json({ error: 'Pick the stage.' }, 400);
+    if (!SECTORS.includes(sector)) return json({ error: 'Pick a sector.' }, 400);
+    if (!STATES.includes(state)) return json({ error: 'Pick where it is based.' }, 400);
+    if (!APPLICANTS[applicant]) return json({ error: 'Pick who is applying.' }, 400);
 
     let ideaContext = '';
     let linkedIdea: string | null = null;
@@ -82,12 +73,11 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    // Started on Grants, so the same venture questions live on this request.
     if (!linkedIdea) {
-      if (startupName.length < 2) return res.status(400).json({ error: 'Name your startup.' });
-      if (ideaText.length < 20) return res.status(400).json({ error: 'Describe your idea in a bit more detail (a couple of sentences).' });
-      if (audience.length < 3) return res.status(400).json({ error: 'Tell us who this is for.' });
-      if (different.length < 5) return res.status(400).json({ error: 'Tell us what makes it different.' });
+      if (startupName.length < 2) return json({ error: 'Name your startup.' }, 400);
+      if (ideaText.length < 20) return json({ error: 'Describe your idea in a bit more detail (a couple of sentences).' }, 400);
+      if (audience.length < 3) return json({ error: 'Tell us who this is for.' }, 400);
+      if (different.length < 5) return json({ error: 'Tell us what makes it different.' }, 400);
       ideaContext = [
         `Startup name: ${startupName}`,
         `Idea: ${ideaText}`,
@@ -110,15 +100,15 @@ export default async function handler(req: any, res: any) {
       `Who is applying?: ${APPLICANTS[applicant]}`,
       ideaContext,
       catalog?.length
-        ? `\nKnown public schemes in our catalog (use as reference, not a hard limit):\n${catalog.map(s => `- ${s.name} (${s.provider}) ${s.href}`).join('\n')}`
+        ? `\nKnown public schemes in our catalog (use as reference, not a hard limit):\n${catalog.map((s) => `- ${s.name} (${s.provider}) ${s.href}`).join('\n')}`
         : '',
       '',
       'Write the report in plain English for founders. Do not use LaTeX or $...$ math. Use ≤ and → as normal characters. Do not wrap words in underscores. Every bullet must include readable text, not a URL alone.',
     ].filter(Boolean).join('\n');
 
-    const raw = await completePickaxe(process.env.PICKAXE_GRANTS_DEPLOYMENT_ID, message, user.id);
+    const raw = await completePickaxe(Deno.env.get('PICKAXE_GRANTS_DEPLOYMENT_ID'), message, user.id);
     const { report, items } = parseGrantResult(raw);
-    const readyCount = items.filter(m => m.status === 'ready').length;
+    const readyCount = items.filter((m) => m.status === 'ready').length;
 
     const { data: run, error: insertError } = await admin
       .from('grant_runs')
@@ -140,17 +130,21 @@ export default async function handler(req: any, res: any) {
       .select('id,created_at')
       .single();
     if (insertError || !run) {
-      console.error('[grants/match] insert', insertError?.message);
-      return res.status(500).json({ error: 'Could not save this match. Please try again.' });
+      console.error('[grants-match] insert', insertError?.message);
+      return json({ error: 'Could not save this match. Please try again.' }, 500);
     }
 
-    return res.status(201).json({ id: run.id, created_at: run.created_at, matches: items, report, readyCount });
-  } catch (e: any) {
+    return json({ id: run.id, created_at: run.created_at, matches: items, report, readyCount }, 201);
+  } catch (e) {
     if (e instanceof ConfigError || e instanceof PickaxeError) {
-      console.error('[grants/match] engine', e.message);
-      return res.status(500).json({ error: e.message === 'The report engine is not configured.' ? 'The grant engine is not configured yet.' : e.message });
+      console.error('[grants-match] engine', e instanceof Error ? e.message : e);
+      return json({
+        error: e instanceof Error && e.message === 'The report engine is not configured.'
+          ? 'The grant engine is not configured yet.'
+          : e instanceof Error ? e.message : 'Something went wrong. Please try again.',
+      }, 500);
     }
-    console.error('[grants/match] failed', e);
-    return res.status(500).json({ error: 'Something went wrong. Please try again.' });
+    console.error('[grants-match] failed', e);
+    return json({ error: 'Something went wrong. Please try again.' }, 500);
   }
-}
+});

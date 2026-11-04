@@ -109,7 +109,7 @@ function useLandingMotion(root: RefObject<HTMLElement | null>) {
         entry.target.classList.add('is-in');
         io.unobserve(entry.target);
       }
-    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.14 });
+    }, { rootMargin: '80px 0px 25% 0px', threshold: 0.01 });
     nodes.forEach(node => io.observe(node));
     const fallback = window.setTimeout(() => {
       nodes.forEach(node => node.classList.add('is-in'));
@@ -136,7 +136,7 @@ export default function ToolStory({ kind, onCta }: { kind: LandingKind; onCta: (
   };
 
   return (
-    <div className="vl-ls" id="story" ref={rootRef}>
+    <div className="vl-ls" id="story" data-kind={kind} ref={rootRef}>
       <div className="ls-strip" aria-label="Questions this tool helps you explore">
         <div className="ls-wrap">
           {story.questions.flatMap((question, i) => [
@@ -510,7 +510,7 @@ function ReportStage({ href, compact }: { href: string; compact?: boolean }) {
 
 function GrantStage({ compact }: { compact?: boolean }) {
   return (
-    <div className="ls-grant-visual" data-in="copy" aria-label="Grant matching considers your idea, stage and eligibility">
+    <div className={`ls-grant-visual${compact ? ' ls-grant-visual--compact' : ''}`} aria-label="Grant matching considers your idea, stage and eligibility">
       <div className="ls-grant-in">
         <span className="ls-grant-ico">{icons.bulb}</span>
         <div>

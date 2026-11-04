@@ -11,13 +11,5 @@
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
-  ],
-  "functions": {
-    "api/idea/generate.ts": {
-      "maxDuration": 60
-    },
-    "api/grants/match.ts": {
-      "maxDuration": 60
-    }
-  }
+  ]
 }

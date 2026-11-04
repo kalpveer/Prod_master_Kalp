@@ -1495,6 +1495,75 @@
   justify-self: end;
 }
 
+.vl-ls .ls-intro > .ls-grant-visual {
+  background: var(--ls-field);
+  border: 1px solid var(--ls-line);
+  border-radius: 22px;
+  padding: 22px 22px 18px;
+  max-width: 100%;
+}
+
+/* Grants has shorter visuals than Idea — keep the same rhythm without empty bands. */
+.vl-ls[data-kind='grants'] .ls-section {
+  padding-block: 44px;
+}
+
+.vl-ls[data-kind='grants'] .ls-intro {
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 420px);
+  gap: 40px;
+  padding-block: 44px;
+  align-items: start;
+}
+
+.vl-ls[data-kind='grants'] .ls-split-head,
+.vl-ls[data-kind='grants'] .ls-audience-head {
+  margin-bottom: 20px;
+}
+
+.vl-ls[data-kind='grants'] .ls-panel {
+  min-height: 0;
+}
+
+.vl-ls[data-kind='grants'] .ls-explorer {
+  gap: 24px;
+  align-items: start;
+}
+
+.vl-ls[data-kind='grants'] .ls-benefits-grid {
+  gap: 32px;
+  align-items: start;
+}
+
+.vl-ls[data-kind='grants'] .ls-art {
+  min-height: 0;
+}
+
+.vl-ls[data-kind='grants'] .ls-steps {
+  gap: 28px;
+}
+
+.vl-ls[data-kind='grants'] .ls-faq {
+  gap: 32px;
+  align-items: start;
+}
+
+.vl-ls[data-kind='grants'] .ls-final {
+  padding-block: 48px;
+}
+
+.vl-ls[data-kind='grants'] .ls-cross {
+  margin-block: 28px;
+  padding: 32px 40px;
+}
+
+.vl-ls[data-kind='grants'].ls-ready [data-in],
+.vl-ls[data-kind='grants'].ls-ready [data-in='copy'],
+.vl-ls[data-kind='grants'].ls-ready [data-in='row'],
+.vl-ls[data-kind='grants'].ls-ready [data-in='step'] {
+  opacity: 1;
+  transform: none;
+}
+
 .vl-ls .ls-grant-in {
   display: flex;
   align-items: center;
@@ -1615,6 +1684,23 @@
   .vl-ls .ls-intro > .ls-stage {
     justify-self: center;
     width: min(560px, 100%);
+  }
+
+  .vl-ls[data-kind='grants'] .ls-intro {
+    grid-template-columns: minmax(0, 1.1fr) minmax(240px, 340px);
+    gap: 28px;
+    align-items: start;
+  }
+}
+
+@media (max-width: 900px) {
+  .vl-ls[data-kind='grants'] .ls-intro {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .vl-ls[data-kind='grants'] .ls-intro > .ls-grant-visual {
+    justify-self: stretch;
   }
 }
 

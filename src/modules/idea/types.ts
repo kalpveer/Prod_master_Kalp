@@ -38,10 +38,10 @@ export const STAGES = [
   { label: 'Generating revenue', hint: 'Customers are paying' },
 ] as const;
 
-/** Free validations saved on the account. Keep in sync with FREE_LIMIT in api/idea/generate.ts. */
+/** Free validations saved on the account. Keep in sync with FREE_LIMIT in supabase/functions/idea-generate. */
 export const FREE_IDEA_LIMIT = 3;
 
-// Must match the server (api/idea/generate.ts) and the storage bucket limits.
+// Must match the idea-generate function and the storage bucket limits.
 export const DECK_MAX_BYTES = 10 * 1024 * 1024;
 /** A run that has been "running" longer than this is treated as dead (the server uses the same cutoff). */
 export const STALE_RUN_MS = 7 * 60 * 1000;
