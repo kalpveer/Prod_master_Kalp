@@ -14,10 +14,10 @@
   ],
   "functions": {
     "api/idea/generate.ts": {
-      "maxDuration": 300
+      "maxDuration": 60
     },
     "api/grants/match.ts": {
-      "maxDuration": 300
+      "maxDuration": 60
     }
   }
 }
