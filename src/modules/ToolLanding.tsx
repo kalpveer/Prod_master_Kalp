@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 import { PrismaHero } from '@/components/ui/prisma-hero';
 import ToolStory from './venture/ToolStory';
+import VentureLabLogo from './venture/VentureLabLogo';
 
 interface Props {
   kind: 'idea' | 'grants';
@@ -36,11 +37,13 @@ export default function ToolLanding({ kind, title, eyebrow, description, detail,
         onCta={onEnter}
       />
       <header className="pointer-events-none absolute inset-x-0 top-0 z-50 flex justify-center px-4 pt-3 md:pt-4">
-        <div className="vl-landing-island pointer-events-auto flex items-center gap-2.5 rounded-full py-2 pl-4 pr-2 md:gap-3 md:pl-5">
-          <span className="vl-landing-island__label text-[13px] font-semibold tracking-tight md:text-sm">
-            VentureLab
-          </span>
-          <span className="vl-landing-island__rule h-3 w-px shrink-0" aria-hidden />
+        <div className="vl-landing-island pointer-events-auto flex items-center gap-3 rounded-full py-2.5 pl-4 pr-2.5 md:gap-4 md:py-3 md:pl-5 md:pr-3">
+          <VentureLabLogo
+            href="/"
+            surface="dark"
+            imgClassName="vl-landing-island__logo h-[26px] w-auto object-contain md:h-[32px]"
+          />
+          <span className="vl-landing-island__rule h-5 w-px shrink-0 md:h-6" aria-hidden />
           <button type="button" onClick={onEnter} className="vl-landing-island__try">
             Try
           </button>

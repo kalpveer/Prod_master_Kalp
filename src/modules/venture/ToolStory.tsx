@@ -427,7 +427,7 @@ export default function ToolStory({ kind, onCta }: { kind: LandingKind; onCta: (
         {kind === 'idea' ? <GrantStage compact /> : <ReportStage compact href={sample || encodeURI('/landing page design idea/sample-report.html')} />}
       </section>
 
-      <ProducticaFooter />
+      <ProducticaFooter tone="light" />
     </div>
   );
 }

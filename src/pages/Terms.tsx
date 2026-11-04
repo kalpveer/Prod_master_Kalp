@@ -84,7 +84,7 @@ export default function Terms() {
             </div>
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4" />
-              <span>LETS CONNECT GROUP</span>
+              <span>Productica Ai Pvt. Ltd.</span>
             </div>
           </div>
         </motion.div>
@@ -122,7 +122,7 @@ export default function Terms() {
               Agreement to Our Legal Terms
             </h2>
             <p>
-              We are <strong>LETS CONNECT GROUP</strong>, doing business as <strong>Productica</strong> ("Company", "we", "us", or "our"), a company registered in India with its main office at {ADDRESSES.office.singleLine}, and a branch at {ADDRESSES.branch.singleLine}.
+              We are <strong>Productica Ai Pvt. Ltd.</strong> ("Company", "we", "us", or "our"), a company registered in India with its main office at {ADDRESSES.office.singleLine}, and a branch at {ADDRESSES.branch.singleLine}.
             </p>
             <p>
               We operate the website <a href="http://www.productica.in" target="_blank" rel="noopener noreferrer" className="text-white underline hover:text-zinc-300">http://www.productica.in</a> (the "Site"), as well as any other related products and services that refer or link to these legal terms (the "Legal Terms") (collectively, the "Services").
@@ -134,7 +134,7 @@ export default function Terms() {
               You can contact us by phone at <a href="tel:+917069133331" className="text-white hover:underline">+917069133331</a>, email at <a href="mailto:info@productica.in" className="text-white hover:underline">info@productica.in</a>, or by mail to {ADDRESSES.office.singleLine} (Office) or {ADDRESSES.branch.singleLine} (Branch).
             </p>
             <p>
-              These Legal Terms constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you"), and LETS CONNECT GROUP, concerning your access to and use of the Services. You agree that by accessing the Services, you have read, understood, and agreed to be bound by all of these Legal Terms. 
+              These Legal Terms constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you"), and Productica Ai Pvt. Ltd., concerning your access to and use of the Services. You agree that by accessing the Services, you have read, understood, and agreed to be bound by all of these Legal Terms. 
             </p>
             <div className="p-4 bg-white/5 border border-white/10 rounded-xl font-semibold text-white text-[13px] leading-relaxed uppercase tracking-wider font-mono">
               IF YOU DO NOT AGREE WITH ALL OF THESE LEGAL TERMS, THEN YOU ARE EXPRESSLY PROHIBITED FROM USING THE SERVICES AND YOU MUST DISCONTINUE USE IMMEDIATELY.
@@ -315,7 +315,7 @@ export default function Terms() {
               14. Governing Law
             </h3>
             <p>
-              These Legal Terms shall be governed by and defined following the laws of <strong>India</strong>. LETS CONNECT GROUP and yourself irrevocably consent that the courts of India shall have exclusive jurisdiction to resolve any legal disputes.
+              These Legal Terms shall be governed by and defined following the laws of <strong>India</strong>. Productica Ai Pvt. Ltd. and yourself irrevocably consent that the courts of India shall have exclusive jurisdiction to resolve any legal disputes.
             </p>
           </section>
 
@@ -325,7 +325,7 @@ export default function Terms() {
               15. Dispute Resolution
             </h3>
             <p>
-              Any legal action or dispute arising out of or in connection with these Legal Terms shall be submitted exclusively to the jurisdiction of the Indian courts. LETS CONNECT GROUP maintains the right to bring proceedings in your country of residence if needed.
+              Any legal action or dispute arising out of or in connection with these Legal Terms shall be submitted exclusively to the jurisdiction of the Indian courts. Productica Ai Pvt. Ltd. maintains the right to bring proceedings in your country of residence if needed.
             </p>
           </section>
 
@@ -421,7 +421,7 @@ export default function Terms() {
               To resolve complaints or for any inquiries regarding the legal operations of our platform, please reach out to us at:
             </p>
             <div className="p-6 bg-zinc-950/60 border border-white/5 rounded-2xl flex flex-col gap-4 font-mono text-[13px] text-zinc-300">
-              <span className="font-semibold text-white text-sm">LETS CONNECT GROUP</span>
+              <span className="font-semibold text-white text-sm">Productica Ai Pvt. Ltd.</span>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-500">Office · {ADDRESSES.office.city}</span>
                 {ADDRESSES.office.lines.map((line) => (

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { LogOut, Moon, Sun } from 'lucide-react';
 import { grantsHref, ideaHref, markWorkspaceOpen } from './venture/landingGate';
+import VentureLabLogo from './venture/VentureLabLogo';
 import { useVentureTheme } from './venture/theme';
 
 interface Props {
@@ -19,10 +20,11 @@ export default function ToolChrome({ active, account, onSignOut, children }: Pro
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-black/80 backdrop-blur-xl">
       <div className="max-w-6xl mx-auto px-4 md:px-8 h-16 flex items-center gap-4">
-        <a href="/" className="shrink-0 leading-none">
-          <span className="block text-[10px] font-mono uppercase tracking-[0.22em] text-white/40">Productica</span>
-          <span className="block text-base font-semibold tracking-tight">VentureLab</span>
-        </a>
+        <VentureLabLogo
+          surface={theme === 'dark' ? 'dark' : 'light'}
+          showProductica
+          imgClassName="h-[18px] w-auto object-contain md:h-[21px]"
+        />
 
         <nav className="flex items-center gap-1 text-sm">
           <a href={ideaHref()} onClick={markWorkspaceOpen} aria-current={active === 'idea' ? 'page' : undefined} className={tab(active === 'idea')}>Validate</a>

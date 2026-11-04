@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 const sections = [
   { id: 'reality', label: '01. Reality' },
-  { id: 'free-validation', label: '02. Validate' },
+  { id: 'products', label: '02. Products' },
   { id: 'agents', label: '03. Productica Teams' },
   { id: 'why-choose', label: '04. Why choose' },
   { id: 'achievements', label: '05. Achievements' },
@@ -76,7 +76,7 @@ export default function TableOfContents() {
   };
 
   return (
-    <div className="hidden md:flex fixed right-8 top-1/2 -translate-y-1/2 z-[90] flex-col justify-between h-[340px] pointer-events-auto mix-blend-difference text-white">
+    <div className="hidden md:flex fixed right-8 top-1/2 -translate-y-1/2 z-[90] flex-col justify-between h-[400px] pointer-events-auto mix-blend-difference text-white">
       <div className="absolute top-0 right-0 h-full w-[1px] bg-white/20 pointer-events-none" />
 
       {sections.map(({ id, label }) => (

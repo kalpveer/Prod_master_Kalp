@@ -134,16 +134,17 @@
     0 0 0 1px color-mix(in srgb, #000 35%, transparent),
     0 12px 40px rgba(0, 0, 0, 0.35);
 }
-.vl-landing-screen .vl-landing-island__label {
-  color: #e1e0cc !important;
+.vl-landing-screen .vl-landing-island__logo {
+  display: block;
+  filter: drop-shadow(0 1px 8px rgba(0, 0, 0, 0.35));
 }
 .vl-landing-screen .vl-landing-island__rule {
   background: rgba(255, 255, 255, 0.28);
 }
 .vl-landing-screen .vl-landing-island__try {
   border-radius: 9999px;
-  padding: 0.35rem 0.9rem;
-  font-size: 0.8125rem;
+  padding: 0.5rem 1.15rem;
+  font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.25;
   background: #e1e0cc !important;
@@ -152,8 +153,8 @@
 }
 @media (min-width: 768px) {
   .vl-landing-screen .vl-landing-island__try {
-    padding: 0.45rem 1rem;
-    font-size: 0.875rem;
+    padding: 0.6rem 1.35rem;
+    font-size: 0.9375rem;
   }
 }
 .vl-landing-screen .vl-landing-island__try:hover {

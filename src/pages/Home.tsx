@@ -9,7 +9,7 @@ import NoiseOverlay from '../components/NoiseOverlay';
 
 import ScrollStory from '../components/ScrollStory';
 import ReactiveTypography from '../components/ReactiveTypography';
-import IdeaFlow from '../components/IdeaFlow';
+import ProductSuite from '../components/ProductSuite';
 import AgenticPlatform from '../components/AgenticPlatform';
 import WhyChooseProductica from '../components/WhyChooseProductica';
 
@@ -55,7 +55,9 @@ export default function Home() {
           <ScrollStory />
         </div>
         <ReactiveTypography />
-        <IdeaFlow />
+
+        {/* After “build what people want”, before Productica Teams */}
+        <ProductSuite />
 
         {/* 3. Agents */}
         <div id="agents">

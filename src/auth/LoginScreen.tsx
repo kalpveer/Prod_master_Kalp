@@ -4,6 +4,7 @@ import { getSupabase } from '../lib/supabase';
 import { useVentureTheme } from '../modules/venture/theme';
 import { useAuth } from './useAuth';
 import { grantsHref, ideaHref } from '../modules/venture/landingGate';
+import VentureLabLogo from '../modules/venture/VentureLabLogo';
 import { normalizePhone, normalizeUsername, validatePassword, validatePhone, validateUsername } from './redirect';
 
 type Mode = 'signin' | 'signup' | 'forgot';
@@ -235,10 +236,11 @@ export default function LoginScreen({ title }: { title: string }) {
       <div className="vl-auth-glow" style={{ width: 460, height: 460, top: -140, left: -120, background: '#d9d3c4', opacity: 0.55 }} />
       <div className="vl-auth-glow" style={{ width: 380, height: 380, right: -120, bottom: -80, background: '#8ea0ae', opacity: 0.4 }} />
       <header className="relative z-10 shrink-0 flex items-center justify-between gap-4 px-6 md:px-12 py-4">
-        <a href="/" className="leading-none">
-          <span className="block text-[10px] font-mono uppercase tracking-[0.22em] text-white/40">Productica</span>
-          <span className="block text-base font-semibold tracking-tight">VentureLab</span>
-        </a>
+        <VentureLabLogo
+          surface="dark"
+          showProductica
+          imgClassName="h-[18px] w-auto object-contain md:h-[21px]"
+        />
         <div className="flex items-center gap-3">
           <nav className="hidden sm:flex items-center gap-3 text-sm text-white/50">
             <a href={ideaHref()} className="hover:text-white">Validate</a>

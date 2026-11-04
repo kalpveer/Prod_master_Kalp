@@ -30,7 +30,7 @@ export const HOME_ICP_CONTENT: HomeIcpContent[] = [
       'Walk into investor conversations with evidence, not vibes',
     ],
     cta: 'Validate my idea',
-    ctaHref: '#free-validation',
+    ctaHref: '/idea',
     pricingMode: 'credits',
   },
   {
@@ -86,7 +86,7 @@ export const HOME_ICP_CONTENT: HomeIcpContent[] = [
       'Decide publish / license / spinout with a concrete next step',
     ],
     cta: 'Commercialize my research',
-    ctaHref: '#free-validation',
+    ctaHref: '/idea',
     pricingMode: 'credits',
   },
 ];
