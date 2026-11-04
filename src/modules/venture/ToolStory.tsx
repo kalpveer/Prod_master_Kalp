@@ -1,343 +1,659 @@
-import type { ReactNode, SVGProps } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import { ArrowRight, ArrowUpRight, Check, Download } from 'lucide-react';
 import ProducticaFooter from './ProducticaFooter';
+import { landingStory, type FeatureTab, type LandingKind } from './landingContent';
+import './landingStory.css';
 
-type Icon = (props: SVGProps<SVGSVGElement>) => ReactNode;
-
-interface Card {
-  title: string;
-  body: string;
-  icon: Icon;
-}
-
-interface Step {
-  n: string;
-  title: string;
-  body: string;
-}
-
-interface Story {
-  kicker: string;
-  introTitle: string;
-  introBody: string;
-  facts: { label: string; value: string }[];
-  audienceTitle: string;
-  audiences: Card[];
-  helpTitle: string;
-  benefits: Card[];
-  stepsTitle: string;
-  steps: Step[];
-  closeTitle: string;
-  closeBody: string;
-  cta: string;
-  visual: ReactNode;
-}
-
-function glyph(props: SVGProps<SVGSVGElement>, paths: ReactNode) {
+function StrokeIcon({ children, className = 'ls-icon' }: { children: ReactNode; className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" fill="none" aria-hidden className="h-[22px] w-[22px]" {...props}>
-      {paths}
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      {children}
     </svg>
   );
 }
 
-const stroke = { stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
-
-const IconNotebook = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <rect x="7" y="5" width="16" height="22" rx="2" {...stroke} />
-  <path d="M11 5v22M15 11h5M15 16h5M15 21h3" {...stroke} />
-</>);
-
-const IconFork = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <circle cx="9" cy="8" r="2.5" {...stroke} />
-  <circle cx="23" cy="8" r="2.5" {...stroke} />
-  <circle cx="16" cy="24" r="2.5" {...stroke} />
-  <path d="M9 10.5V14c0 2 3.1 4 7 4M23 10.5V14c0 2-3.1 4-7 4M16 18v3.5" {...stroke} />
-</>);
-
-const IconLayers = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <path d="M5 13l11-6 11 6-11 6L5 13Z" {...stroke} />
-  <path d="M5 18l11 6 11-6" {...stroke} />
-</>);
-
-const IconMarket = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <path d="M6 24V12M13 24V8M20 24v-9M27 24V10" {...stroke} />
-  <path d="M6 16c3.2-4 7-1.5 10.5-5.5 3.8 1.8 6.5 5 10.5-1" {...stroke} />
-</>);
-
-const IconOverlap = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <rect x="5" y="8" width="14" height="16" rx="2" {...stroke} />
-  <rect x="13" y="8" width="14" height="16" rx="2" {...stroke} />
-</>);
-
-const IconScore = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <circle cx="16" cy="16" r="10" {...stroke} />
-  <path d="M16 16L16 8" {...stroke} />
-  <path d="M16 16l6 4" {...stroke} />
-</>);
-
-const IconNext = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <rect x="6" y="7" width="14" height="18" rx="2" {...stroke} />
-  <path d="M10 12h6M10 16h6M10 20h4M22 14l4 4-4 4" {...stroke} />
-</>);
-
-const IconId = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <rect x="5" y="9" width="22" height="14" rx="2" {...stroke} />
-  <circle cx="12" cy="16" r="2.2" {...stroke} />
-  <path d="M16.5 14.5h7M16.5 18h5" {...stroke} />
-</>);
-
-const IconProto = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <rect x="8" y="6" width="16" height="20" rx="2.5" {...stroke} />
-  <path d="M12 11h8M12 15h8M12 19h5" {...stroke} />
-  <circle cx="16" cy="23.5" r="0.8" fill="currentColor" />
-</>);
-
-const IconCircuit = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <rect x="6" y="6" width="20" height="20" rx="3" {...stroke} />
-  <circle cx="12" cy="12" r="1.6" {...stroke} />
-  <circle cx="20" cy="12" r="1.6" {...stroke} />
-  <circle cx="16" cy="20" r="1.6" {...stroke} />
-  <path d="M13.6 12h4.8M12 13.6V16c0 2 1.8 4 4 4" {...stroke} />
-</>);
-
-const IconStore = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <path d="M6 13l1.5-6h17L26 13" {...stroke} />
-  <path d="M7 13v11h18V13" {...stroke} />
-  <path d="M6 13c1.4 2 3.4 3 5.5 3S16 15 17.5 13 21 10 23.5 13 26 16 26 13" {...stroke} />
-  <path d="M14 24v-6h4v6" {...stroke} />
-</>);
-
-const IconFilter = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <path d="M7 8h18l-6.5 8v7l-5 2v-9L7 8Z" {...stroke} />
-</>);
-
-const IconBadge = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <circle cx="16" cy="14" r="7" {...stroke} />
-  <path d="M13 14.2l2 2 4-4M11 22l5-2 5 2" {...stroke} />
-</>);
-
-const IconColumns = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <rect x="5" y="7" width="9" height="18" rx="1.5" {...stroke} />
-  <rect x="18" y="7" width="9" height="18" rx="1.5" {...stroke} />
-  <path d="M8 12h3M8 16h3M21 12h3M21 16h3" {...stroke} />
-</>);
-
-const IconOfficial = (p: SVGProps<SVGSVGElement>) => glyph(p, <>
-  <path d="M7 26V12l9-5 9 5v14" {...stroke} />
-  <path d="M12 26v-8h8v8" {...stroke} />
-  <path d="M12 16h8" {...stroke} />
-</>);
-
-const idea: Story = {
-  kicker: 'Idea validation',
-  introTitle: 'Every great startup begins with an idea. Start by validating yours.',
-  introBody:
-    "Productica's AI-powered Idea Validation Tool helps you evaluate your startup idea before investing significant time and resources. Explore your market, understand your competition, identify your target audience, and discover potential opportunities to make more informed decisions.",
-  facts: [
-    { label: 'You share', value: 'Name, idea, audience, what is different, and stage. A pitch deck is optional.' },
-    { label: 'You get', value: 'A scored report with a verdict — build, test first, pivot, or park — and a Syncoro IQ.' },
-    { label: 'Then', value: 'The same answers can go into Grants, so you do not describe the venture twice.' },
-  ],
-  audienceTitle: 'Built for people who dare to build.',
-  audiences: [
-    { icon: IconNotebook, title: 'Aspiring Entrepreneurs', body: "Have a business idea but don't know where to start? Explore its potential before taking the leap." },
-    { icon: IconId, title: 'Student Innovators', body: 'Evaluate college startup ideas, innovation projects, and entrepreneurial concepts with greater clarity.' },
-    { icon: IconFork, title: 'Early-Stage Founders', body: 'Understand your market, assess competitors, and refine your business direction.' },
-    { icon: IconLayers, title: 'Product Builders', body: 'Explore customer problems, market opportunities, and differentiation before investing in development.' },
-  ],
-  helpTitle: 'Make your next move with more clarity.',
-  benefits: [
-    { icon: IconMarket, title: 'Understand Your Market', body: 'Explore your target audience, market opportunity, and the problem your idea aims to solve.' },
-    { icon: IconOverlap, title: 'Analyse the Competition', body: 'Discover competing solutions and identify ways your idea could stand out.' },
-    { icon: IconScore, title: 'Evaluate Your Idea', body: "Get structured AI-assisted insights to help assess your idea's strengths, gaps, and potential." },
-    { icon: IconNext, title: 'Plan Your Next Steps', body: 'Use the insights to refine your concept and decide what to research, test, or build next.' },
-  ],
-  stepsTitle: 'From idea to informed action.',
-  steps: [
-    { n: '01', title: 'Share Your Idea', body: 'Describe your startup concept, the problem it solves, and your intended audience.' },
-    { n: '02', title: 'Analyse the Opportunity', body: 'Productica writes a scored report from the answers you submit, including an optional pitch deck if you add one.' },
-    { n: '03', title: 'Discover Your Next Step', body: 'Review your results and use them to refine your idea and plan further validation.' },
-  ],
-  closeTitle: 'Your idea has potential. Find out more.',
-  closeBody: 'Take the first step towards building with clarity. Explore your idea, understand your market, and discover opportunities worth pursuing.',
-  cta: 'Validate Your Idea',
-  visual: <IdeaVisual />,
+const icons = {
+  spark: (
+    <StrokeIcon>
+      <path d="m12 2 2.3 7.7L22 12l-7.7 2.3L12 22l-2.3-7.7L2 12l7.7-2.3Z" />
+    </StrokeIcon>
+  ),
+  flag: (
+    <StrokeIcon>
+      <path d="M5 22V3m0 1c4-3 9 3 14 0v10c-5 3-10-3-14 0" />
+    </StrokeIcon>
+  ),
+  bulb: (
+    <StrokeIcon>
+      <path d="M9 18h6m-5 3h4M8.5 15a7 7 0 1 1 7 0c-.8.5-1.2 1.4-1.2 3H9.7c0-1.6-.4-2.5-1.2-3Z" />
+    </StrokeIcon>
+  ),
+  cap: (
+    <StrokeIcon>
+      <path d="m2 9 10-5 10 5-10 5ZM6 11v6c4 3 8 3 12 0v-6M22 9v7" />
+    </StrokeIcon>
+  ),
+  lens: (
+    <StrokeIcon>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m16 16 5 5M7 10.5h7m-3.5-3.5v7" />
+    </StrokeIcon>
+  ),
+  chart: (
+    <StrokeIcon>
+      <path d="M4 4v16h17M8 15v-4m5 4V7m5 8v-6" />
+    </StrokeIcon>
+  ),
+  people: (
+    <StrokeIcon>
+      <circle cx="9" cy="7" r="3" />
+      <path d="M3 21v-3a6 6 0 0 1 12 0v3M17 4a3 3 0 0 1 0 6m1 5a5 5 0 0 1 3 5" />
+    </StrokeIcon>
+  ),
+  grid: (
+    <StrokeIcon>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </StrokeIcon>
+  ),
+  route: (
+    <StrokeIcon>
+      <circle cx="5" cy="5" r="2" />
+      <circle cx="19" cy="19" r="2" />
+      <path d="M5 7v6a4 4 0 0 0 4 4h6m-2-4 4 4-4 4M12 5h7m-3-3 3 3-3 3" />
+    </StrokeIcon>
+  ),
+  check: (
+    <StrokeIcon>
+      <path d="m5 12 4 4L19 6" />
+    </StrokeIcon>
+  ),
 };
 
-const grants: Story = {
-  kicker: 'Grant matching',
-  introTitle: 'The right funding opportunity can change everything.',
-  introBody:
-    "Finding startup funding can be overwhelming. Productica's Grant Matching Tool helps founders discover grants and government funding schemes that may align with their startup's industry, location, stage, and eligibility profile. Spend less time searching across multiple sources and more time exploring opportunities that could help your startup move forward.",
-  facts: [
-    { label: 'You share', value: 'Sector, where it is based, and who is applying. A saved validation can skip the venture questions.' },
-    { label: 'You get', value: 'A shortlist of public schemes that may fit, with why they were suggested and the official page.' },
-    { label: 'Then', value: 'You verify details on the scheme site. Matching is a starting point, not an approval.' },
-  ],
-  audienceTitle: 'Funding discovery for every stage of ambition.',
-  audiences: [
-    { icon: IconId, title: 'Student Entrepreneurs', body: 'Discover potentially relevant grants, student innovation schemes, and support for eligible entrepreneurial projects.' },
-    { icon: IconProto, title: 'Early-Stage Startups', body: 'Explore funding schemes that may support product development, prototyping, and early business growth.' },
-    { icon: IconCircuit, title: 'Deep-Tech Innovators', body: 'Find potentially relevant research, technology development, and innovation funding opportunities.' },
-    { icon: IconStore, title: 'Growing Businesses', body: 'Explore schemes that may fit your business sector, location, registration status, and stage of growth.' },
-  ],
-  helpTitle: 'Find opportunities worth exploring.',
-  benefits: [
-    { icon: IconFilter, title: 'Discover Relevant Grants', body: "Explore funding opportunities based on your startup's profile and the information available." },
-    { icon: IconBadge, title: 'Understand Eligibility', body: 'Review key requirements and identify which criteria your business may need to meet.' },
-    { icon: IconColumns, title: 'Compare Opportunities', body: 'Examine available funding details, intended beneficiaries, and scheme requirements where information is available.' },
-    { icon: IconOfficial, title: 'Take the Next Step', body: 'Access official scheme sources to verify details and continue with the application process.' },
-  ],
-  stepsTitle: 'From startup profile to funding opportunities.',
-  steps: [
-    { n: '01', title: 'Tell Us About Your Startup', body: 'Share your venture, then your sector, where it is based, and who is applying. A saved validation can skip the venture questions.' },
-    { n: '02', title: 'Discover Your Matches', body: 'Explore funding schemes that may align with your profile and the available eligibility information.' },
-    { n: '03', title: 'Review and Apply', body: 'Verify the scheme details through official sources and follow the relevant application process.' },
-  ],
-  closeTitle: 'Your next funding opportunity starts here.',
-  closeBody: 'Discover relevant grants, explore available support, and take a more informed step towards growing your startup.',
-  cta: 'Find My Grants',
-  visual: <GrantVisual />,
+const tabIcon: Record<FeatureTab['panel'], ReactNode> = {
+  lens: icons.lens,
+  iq: icons.chart,
+  market: icons.people,
+  model: icons.grid,
+  next: icons.route,
+  'grant-lens': icons.spark,
+  eligibility: icons.check,
+  stage: icons.route,
+  sector: icons.grid,
+  apply: icons.flag,
 };
 
-export default function ToolStory({ kind, onCta }: { kind: 'idea' | 'grants'; onCta: () => void }) {
-  const story = kind === 'idea' ? idea : grants;
+const useIcon = {
+  people: icons.people,
+  grid: icons.grid,
+  bulb: icons.bulb,
+  flag: icons.flag,
+};
+
+function useLandingMotion(root: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    el.classList.add('ls-ready');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const nodes = [...el.querySelectorAll<HTMLElement>('[data-in]')];
+    if (reduce) {
+      nodes.forEach(node => node.classList.add('is-in'));
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add('is-in');
+        io.unobserve(entry.target);
+      }
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.14 });
+    nodes.forEach(node => io.observe(node));
+    const fallback = window.setTimeout(() => {
+      nodes.forEach(node => node.classList.add('is-in'));
+    }, 1800);
+    return () => {
+      window.clearTimeout(fallback);
+      io.disconnect();
+    };
+  }, [root]);
+}
+
+export default function ToolStory({ kind, onCta }: { kind: LandingKind; onCta: () => void }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  useLandingMotion(rootRef);
+  const story = landingStory[kind];
+  const [tab, setTab] = useState(story.tabs[0].id);
+  const active = story.tabs.find(item => item.id === tab) ?? story.tabs[0];
+  const sample = story.sampleHref ? encodeURI(story.sampleHref) : '';
+
+  const moveTab = (delta: number) => {
+    const index = story.tabs.findIndex(item => item.id === tab);
+    const next = story.tabs[(index + delta + story.tabs.length) % story.tabs.length];
+    setTab(next.id);
+  };
+
   return (
-    <div className="bg-black text-white">
-      <Section>
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
-          <div>
-            <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/35">{story.kicker}</p>
-            <h2 className="mt-3 text-3xl md:text-4xl font-light tracking-tight leading-[1.1]">{story.introTitle}</h2>
-            <p className="mt-5 text-sm md:text-base leading-relaxed text-white/60 max-w-2xl">{story.introBody}</p>
-            <dl className="mt-8 grid gap-4">
-              {story.facts.map(fact => (
-                <div key={fact.label} className="grid gap-1 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-4">
-                  <dt className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/40 pt-0.5">{fact.label}</dt>
-                  <dd className="text-sm leading-relaxed text-white/70">{fact.value}</dd>
-                </div>
-              ))}
-            </dl>
+    <div className="vl-ls" id="story" ref={rootRef}>
+      <div className="ls-strip" aria-label="Questions this tool helps you explore">
+        <div className="ls-wrap">
+          {story.questions.flatMap((question, i) => [
+            i > 0 ? <span key={`spark-${question}`} aria-hidden>{icons.spark}</span> : null,
+            <span key={question}>{question}</span>,
+          ])}
+        </div>
+      </div>
+
+      <section className="ls-intro ls-wrap" id="report">
+        <div data-in="copy">
+          <p className="ls-eyebrow">{story.introEyebrow}</p>
+          <h2>
+            {story.introTitle[0]}
+            <br />
+            <span className="ls-muted">{story.introTitle[1]}</span>
+          </h2>
+          <p className="ls-lead" style={{ marginTop: 28 }}>{story.introLead}</p>
+          <p className="ls-intro-body">{story.introBody}</p>
+          <div className="ls-intro-note">
+            <span className="ls-mark" aria-hidden>↗</span>
+            <p>{story.introNote}</p>
           </div>
-          {story.visual}
         </div>
-      </Section>
+        {kind === 'idea' ? <ReportStage href={sample} /> : <GrantStage />}
+      </section>
 
-      <Section>
-        <h2 className="text-3xl md:text-4xl font-light tracking-tight">{story.audienceTitle}</h2>
-        <div className="mt-8 grid sm:grid-cols-2 gap-3">
-          {story.audiences.map(card => <InfoCard key={card.title} card={card} />)}
+      <section className="ls-audience ls-section" id="audience">
+        <div className="ls-wrap">
+          <div className="ls-audience-head">
+            <h2>{story.audienceTitle}</h2>
+            <p>{story.audienceSub}</p>
+          </div>
+          <div className="ls-rows">
+            {story.audiences.map((row, i) => (
+              <article key={row.id} data-in="row" style={{ '--i': i } as CSSProperties} className={`ls-row ${row.tone === 'ink' ? 'ls-row-ink' : row.tone === 'soft' ? 'ls-row-soft' : ''}`}>
+                <span className="ls-row-icon">{icons[row.icon]}</span>
+                <h3>{row.title}</h3>
+                <p>{row.body}</p>
+                <span className="ls-outcome">{icons.check} {row.outcome}</span>
+              </article>
+            ))}
+          </div>
         </div>
-      </Section>
+      </section>
 
-      <Section>
-        <h2 className="text-3xl md:text-4xl font-light tracking-tight">{story.helpTitle}</h2>
-        <div className="mt-8 grid sm:grid-cols-2 gap-3">
-          {story.benefits.map(card => <InfoCard key={card.title} card={card} />)}
+      <section className="ls-features ls-section" id="features">
+        <div className="ls-wrap">
+          <div className="ls-split-head">
+            <div>
+              <p className="ls-eyebrow">{story.featuresEyebrow}</p>
+              <h2>
+                {story.featuresTitle[0]}
+                <br />
+                {story.featuresTitle[1]}
+              </h2>
+            </div>
+            <p>
+              {story.featuresSub}
+              <span className="ls-quiet">{story.featuresNote}</span>
+            </p>
+          </div>
+
+          <div className="ls-explorer" data-in="copy">
+            <div className="ls-tabs" role="tablist" aria-label={kind === 'idea' ? 'Report features' : 'Match features'} aria-orientation="vertical">
+              {story.tabs.map((item, index) => {
+                const selected = item.id === active.id;
+                return (
+                  <button
+                    key={item.id}
+                    id={`tab-${item.id}`}
+                    className="ls-tab"
+                    role="tab"
+                    type="button"
+                    aria-selected={selected}
+                    aria-controls={`panel-${item.id}`}
+                    tabIndex={selected ? 0 : -1}
+                    onClick={() => setTab(item.id)}
+                    onKeyDown={event => {
+                      if (event.key === 'ArrowDown' || event.key === 'ArrowRight') { event.preventDefault(); moveTab(1); }
+                      if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') { event.preventDefault(); moveTab(-1); }
+                      if (event.key === 'Home') { event.preventDefault(); setTab(story.tabs[0].id); }
+                      if (event.key === 'End') { event.preventDefault(); setTab(story.tabs[story.tabs.length - 1].id); }
+                    }}
+                  >
+                    <span className="ls-idx">{String(index + 1).padStart(2, '0')}</span>
+                    <span>
+                      <strong>{item.title}</strong>
+                      <small>{item.blurb}</small>
+                    </span>
+                    {icons.spark}
+                  </button>
+                );
+              })}
+            </div>
+            <article className="ls-panel" id={`panel-${active.id}`} role="tabpanel" aria-labelledby={`tab-${active.id}`} tabIndex={0}>
+              <div className="ls-panel-top">
+                <span>{tabIcon[active.panel]} {active.kicker}</span>
+                {kind === 'idea' && <span className="ls-sample">From the sample</span>}
+              </div>
+              <h3>{active.heading}</h3>
+              <p>{active.body}</p>
+              <FeatureBody panel={active.panel} />
+              <div className="ls-take">
+                <span>Your takeaway</span>
+                <p>{active.takeaway}</p>
+              </div>
+            </article>
+          </div>
+
+          <div className="ls-feature-foot">
+            <p>{icons.check} {story.featuresFoot}</p>
+            {sample && story.sampleLabel && (
+              <a className="ls-text-link" href={sample} target="_blank" rel="noopener noreferrer">
+                {story.sampleLabel} <ArrowUpRight size={14} />
+              </a>
+            )}
+          </div>
         </div>
-      </Section>
+      </section>
 
-      <Section>
-        <h2 className="text-3xl md:text-4xl font-light tracking-tight">{story.stepsTitle}</h2>
-        <ol className="mt-8 grid gap-3 md:grid-cols-3">
-          {story.steps.map(step => (
-            <li key={step.n} className="rounded-2xl border border-white/10 px-5 py-5">
-              <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/35">{step.n}</p>
-              <h3 className="mt-3 text-lg font-semibold tracking-tight">{step.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-white/55">{step.body}</p>
-            </li>
+      <section className="ls-section ls-wrap" id="benefits">
+        <div className="ls-split-head">
+          <div>
+            <p className="ls-eyebrow">{story.benefitsEyebrow}</p>
+            <h2>
+              {story.benefitsTitle[0]}
+              <br />
+              {story.benefitsTitle[1]}
+            </h2>
+          </div>
+        </div>
+        <div className="ls-benefits-grid">
+          <div className="ls-art" aria-hidden>
+            <div className="ls-mess">
+              {story.messy.map(tag => <span key={tag}>{tag}</span>)}
+              <svg viewBox="0 0 330 190">
+                <path d="M26 115c49-136 290 81 230-46S57 204 51 85s274-56 226 46S37 30 126 51s112 129 129 26" />
+              </svg>
+            </div>
+            <span className="ls-arrow">↓</span>
+            <div className="ls-clear">
+              <Check size={18} />
+              <span>{story.clarity}</span>
+            </div>
+            <span className="ls-art-cap">{story.artCaption}</span>
+          </div>
+          <div className="ls-benefit-list">
+            {story.benefits.map((item, i) => (
+              <article key={item.title} data-in="step" style={{ '--i': i } as CSSProperties}>
+                <span>{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="ls-how ls-section" id="how-it-works">
+        <div className="ls-wrap">
+          <div className="ls-split-head">
+            <div>
+              <p className="ls-eyebrow">{story.howEyebrow}</p>
+              <h2>
+                {story.howTitle[0]}
+                <br />
+                {story.howTitle[1]}
+              </h2>
+            </div>
+            <button type="button" className="ls-btn-ghost" onClick={onCta}>
+              {story.howCta} <ArrowUpRight size={16} />
+            </button>
+          </div>
+          <div className="ls-steps">
+            {story.steps.map((step, i) => (
+              <article key={step.title} data-in="step" style={{ '--i': i } as CSSProperties}>
+                <span className="ls-step-n">{String(i + 1).padStart(2, '0')}<span>↗</span></span>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="ls-section ls-wrap" id="use">
+        <div className="ls-split-head">
+          <div>
+            <p className="ls-eyebrow">{story.useEyebrow}</p>
+            <h2>{story.useTitle}</h2>
+          </div>
+          <p>{story.useSub}</p>
+        </div>
+        <div className="ls-uses">
+          {story.uses.map((item, i) => (
+            <article key={item.title} data-in="step" style={{ '--i': i } as CSSProperties}>
+              <span className="ls-use-icon">{useIcon[item.icon]}</span>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
           ))}
-        </ol>
-      </Section>
-
-      <Section>
-        <div className="rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-10 md:px-12 md:py-14 text-center">
-          <h2 className="text-3xl md:text-4xl font-light tracking-tight">{story.closeTitle}</h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm md:text-base leading-relaxed text-white/60">{story.closeBody}</p>
-          <button
-            type="button"
-            onClick={onCta}
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-black hover:bg-white/90 active:scale-[0.97] transition-all"
-          >
-            {story.cta} <ArrowRight size={16} />
-          </button>
         </div>
-      </Section>
+      </section>
+
+      {story.download && (
+        <section className="ls-wrap ls-download" id="download" data-in="copy">
+          <div className="ls-file" aria-hidden>
+            <Download size={48} strokeWidth={1.1} />
+            <span>Yours to explore</span>
+          </div>
+          <div>
+            <p className="ls-eyebrow">{story.download.eyebrow}</p>
+            <h2>
+              {story.download.title[0]}
+              <br />
+              {story.download.title[1]}
+            </h2>
+            <p>{story.download.body}</p>
+            <div className="ls-download-actions">
+              <a className="ls-btn" href={encodeURI(story.download.href)} download="Productica-Idea-Validation-Sample.html">
+                {story.download.primary} <Download size={16} />
+              </a>
+              <a className="ls-text-link" href={encodeURI(story.download.href)} target="_blank" rel="noopener noreferrer">
+                {story.download.secondary} <ArrowUpRight size={14} />
+              </a>
+            </div>
+            <span className="ls-download-detail">{story.download.detail}</span>
+          </div>
+        </section>
+      )}
+
+      <section className="ls-faq ls-section ls-wrap" id="faqs" data-in="copy">
+        <div className="ls-faq-intro">
+          <p className="ls-eyebrow">{story.faqEyebrow}</p>
+          <h2>
+            {story.faqTitle[0]}
+            <br />
+            {story.faqTitle[1]}
+          </h2>
+          <p>{story.faqSub}</p>
+        </div>
+        <div className="ls-faq-list">
+          {story.faqs.map(item => (
+            <details key={item.q} id={item.id}>
+              <summary>{item.q}<span className="ls-plus" aria-hidden /></summary>
+              <p>{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section className="ls-final" aria-labelledby="final-title" data-in="copy">
+        <div className="ls-wrap">
+          <p className="ls-eyebrow">{story.finalEyebrow}</p>
+          <h2 id="final-title">
+            {story.finalTitle[0]}
+            <br />
+            <span>{story.finalTitle[1]}</span>
+          </h2>
+          <p>{story.finalBody}</p>
+          <button type="button" className="ls-btn-accent" onClick={onCta}>
+            {story.finalCta} <ArrowRight size={16} />
+          </button>
+          <span className="ls-final-detail">{story.finalDetail}</span>
+        </div>
+      </section>
+
+      <section className="ls-cross ls-wrap" id="cross" data-in="copy">
+        <div>
+          <p className="ls-eyebrow">{icons.spark} {story.crossEyebrow}</p>
+          <h2>
+            {story.crossTitle[0]}
+            <br />
+            {story.crossTitle[1]}
+            {story.crossTitle[2] && <>
+              <br />
+              <span>{story.crossTitle[2]}</span>
+            </>}
+          </h2>
+          <p>{story.crossBody}</p>
+          <a className="ls-text-link" href={story.crossHref}>
+            {story.crossLink} <ArrowRight size={14} />
+          </a>
+        </div>
+        {kind === 'idea' ? <GrantStage compact /> : <ReportStage compact href={sample || encodeURI('/landing page design idea/sample-report.html')} />}
+      </section>
 
       <ProducticaFooter />
     </div>
   );
 }
 
-function Section({ children }: { children: ReactNode }) {
-  return <section className="max-w-6xl mx-auto px-6 md:px-12 py-16 md:py-20">{children}</section>;
-}
+function ReportStage({ href, compact }: { href: string; compact?: boolean }) {
+  if (compact) {
+    return (
+      <div className="ls-stage ls-stage--compact" data-in="paper">
+        <div className="ls-stage-top"><span><span className="ls-dot" /> A look inside</span><span>Idea → insight</span></div>
+        <div className="ls-paper-back" aria-hidden />
+        <article className="ls-paper">
+          <div className="ls-paper-brand">productica<em>.</em><span className="ls-paper-ed">Idea validation</span></div>
+          <div className="ls-rule" />
+          <span className="ls-paper-label">The idea, sharpened</span>
+          <h3>Freelancer<br />SafePay<span>.</span></h3>
+          <p className="ls-paper-sum">A scored report before you build.</p>
+          <div className="ls-score ls-score--compact">
+            <div>
+              <span className="ls-paper-label">Syncoro IQ</span>
+              <strong>4.8<span>/10</span></strong>
+              <span className="ls-verdict">Verdict: pivot</span>
+            </div>
+          </div>
+        </article>
+        {href && (
+          <a className="ls-stage-link" href={href} target="_blank" rel="noopener noreferrer">
+            <span>See the sample report</span>
+            <ArrowUpRight size={14} />
+          </a>
+        )}
+      </div>
+    );
+  }
 
-function InfoCard({ card }: { card: Card }) {
-  const Icon = card.icon;
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-5">
-      <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-white/80">
-        <Icon />
-      </span>
-      <h3 className="mt-4 text-base font-semibold tracking-tight">{card.title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-white/55">{card.body}</p>
-    </article>
-  );
-}
-
-function IdeaVisual() {
-  return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 md:p-6" aria-hidden>
-      <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/35">Sample report shape</p>
-      <div className="mt-4 flex items-end justify-between gap-3">
-        <div>
-          <p className="text-sm text-white/45">Startup name</p>
-          <p className="mt-1 text-lg font-semibold tracking-tight">Working title</p>
+    <div className="ls-stage" data-in="paper">
+      <div className="ls-stage-top">
+        <span><span className="ls-dot" /> A look inside</span>
+        <span>Idea → insight → action</span>
+      </div>
+      <div className="ls-paper-back" aria-hidden />
+      <article className="ls-paper">
+        <div className="ls-paper-brand">productica<em>.</em><span className="ls-paper-ed">Idea validation</span></div>
+        <div className="ls-rule" />
+        <span className="ls-paper-label">The idea, sharpened</span>
+        <h3>Freelancer<br />SafePay<span>.</span></h3>
+        <p className="ls-paper-sum">A clearer money picture for<br />India’s independent workforce.</p>
+        <div className="ls-score">
+          <div>
+            <span className="ls-paper-label">Syncoro IQ</span>
+            <strong>4.8<span>/10</span></strong>
+            <span className="ls-verdict">Verdict: pivot</span>
+          </div>
+          <svg viewBox="0 0 145 95" role="img" aria-label="Syncoro IQ score: 4.8 out of 10">
+            <path className="ls-gauge-track" d="M15 77a57 57 0 0 1 114 0" />
+            <path className="ls-gauge-fill" d="M15 77a57 57 0 0 1 114 0" pathLength="100" />
+            <text x="72" y="69" textAnchor="middle">4.8</text>
+            <text className="ls-gauge-unit" x="72" y="89" textAnchor="middle">OUT OF 10</text>
+          </svg>
         </div>
-        <p className="text-right">
-          <span className="block text-[10px] font-mono uppercase tracking-widest text-white/35">Syncoro IQ</span>
-          <span className="mt-1 block text-2xl font-light tracking-tight">—.—</span>
-        </p>
+        <div className="ls-insight">
+          <span aria-hidden>↗</span>
+          <p><b>The next move</b> Test the safe-to-withdraw ritual with real freelancers before building a full tax app.</p>
+        </div>
+        <div className="ls-paper-foot"><span>Clarity before code.</span><span>01 / 13</span></div>
+      </article>
+      <div className="ls-note">
+        {icons.spark}
+        <span>A pivot can<br />be progress.</span>
       </div>
-      <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {['Build', 'Test first', 'Pivot', 'Park'].map((label, i) => (
-          <span key={label} className={`rounded-md border px-2 py-1.5 text-center text-[10px] font-mono uppercase tracking-widest ${i === 1 ? 'border-white/30 text-white' : 'border-white/10 text-white/40'}`}>
-            {label}
-          </span>
-        ))}
-      </div>
-      <ul className="mt-5 grid gap-2 text-sm text-white/60">
-        <li className="rounded-xl border border-white/10 px-3 py-2.5">Who it is for, and the problem it solves</li>
-        <li className="rounded-xl border border-white/10 px-3 py-2.5">What makes it different</li>
-        <li className="rounded-xl border border-white/10 px-3 py-2.5">What to research, test, or build next</li>
-      </ul>
-      <p className="mt-4 text-xs text-white/35">An illustration of the report, not a live result.</p>
+      {href && (
+        <a className="ls-stage-link" href={href} target="_blank" rel="noopener noreferrer">
+          <span>Real sample. Real strategic questions.</span>
+          <ArrowUpRight size={14} />
+        </a>
+      )}
     </div>
   );
 }
 
-function GrantVisual() {
+function GrantStage({ compact }: { compact?: boolean }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 md:p-6" aria-hidden>
-      <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/35">Sample shortlist shape</p>
-      <div className="mt-4 grid gap-3">
+    <div className="ls-grant-visual" data-in="copy" aria-label="Grant matching considers your idea, stage and eligibility">
+      <div className="ls-grant-in">
+        <span className="ls-grant-ico">{icons.bulb}</span>
+        <div>
+          <span className="ls-paper-label">The starting point</span>
+          <strong>Your idea.</strong>
+        </div>
+      </div>
+      <div className="ls-connect"><i /><span>Find the fit</span><i /></div>
+      <div className="ls-match">
+        <div className="ls-paper-label" style={{ marginBottom: 10 }}>Your grant matching lens</div>
+        {['Idea & sector relevance', 'Venture stage alignment', 'Eligibility to review'].map(row => (
+          <div key={row} className="ls-match-row">
+            <span>{row}</span>
+            {icons.check}
+          </div>
+        ))}
+        <div className="ls-match-result">
+          A shortlist worth exploring <ArrowUpRight size={14} />
+        </div>
+      </div>
+      {!compact && (
+        <p className="ls-grant-note">A relevant match is a starting point.<br />Eligibility and selection remain with each grant provider.</p>
+      )}
+    </div>
+  );
+}
+
+function FeatureBody({ panel }: { panel: FeatureTab['panel'] }) {
+  if (panel === 'lens') {
+    return (
+      <>
+        <div className="ls-arch">
+          <span className="ls-arch-glyph" aria-hidden>✳</span>
+          <div>
+            <span className="ls-paper-label">Sample archetype</span>
+            <h4>The Efficiency Engine</h4>
+            <p>A product that saves customers time or money.</p>
+          </div>
+        </div>
+        <div className="ls-fits">
+          <span><i />Tailwind</span>
+          <span className="watch"><i />Budget</span>
+          <span className="watch"><i />Reach</span>
+          <span className="focus"><i />Stickiness</span>
+          <span className="focus"><i />Trust</span>
+        </div>
+      </>
+    );
+  }
+  if (panel === 'iq') {
+    return (
+      <div className="ls-bars">
         {[
-          { tag: 'Apply', name: 'Public scheme', why: 'May fit this sector, location, and applicant type.' },
-          { tag: 'Later', name: 'Related scheme', why: 'Useful once the venture is further along.' },
-        ].map(row => (
-          <div key={row.name} className="rounded-2xl border border-white/10 px-4 py-4">
-            <div className="flex items-start justify-between gap-3">
-              <p className="text-sm font-semibold tracking-tight">{row.name}</p>
-              <span className="text-[10px] font-mono uppercase tracking-widest border border-white/20 rounded-md px-2 py-1 text-white/70">{row.tag}</span>
-            </div>
-            <p className="mt-2 text-sm leading-relaxed text-white/50">{row.why}</p>
-            <p className="mt-3 text-xs text-white/40">Official page →</p>
+          ['Innovation', '40%', '4.0'],
+          ['Value', '53%', '5.3'],
+          ['Market', '60%', '6.0'],
+          ['Profitability', '43%', '4.3'],
+          ['X Factor', '40%', '4.0'],
+        ].map(([name, value, score], i) => (
+          <div key={name}>
+            <span>{name}</span>
+            <div><i style={{ '--value': value, '--i': i } as CSSProperties} /></div>
+            <strong>{score}</strong>
           </div>
         ))}
       </div>
-      <p className="mt-4 text-xs text-white/35">An illustration of a match, not a live shortlist.</p>
+    );
+  }
+  if (panel === 'market') {
+    return (
+      <div className="ls-mini">
+        <div><span className="ls-paper-label">Sample customer segment</span><span className="ls-paper-label">Priority</span></div>
+        <div><strong>Established multiclient freelancers</strong><span className="ls-pri on">Start here</span></div>
+        <div><span>New full-time freelancers</span><span className="ls-pri">Pilot</span></div>
+        <div><span>High-earning creators</span><span className="ls-pri">Later</span></div>
+      </div>
+    );
+  }
+  if (panel === 'model') {
+    return (
+      <>
+        <div className="ls-canvas">
+          <div><span>Problem</span><p>“How much can I safely withdraw?”</p></div>
+          <div><span>Solution</span><p>A withdrawal number + tax reserve</p></div>
+          <div><span>First customer</span><p>Multiclient Indian freelancers</p></div>
+          <div><span>Revenue to test</span><p>Monthly subscription</p></div>
+        </div>
+        <div className="ls-risk">
+          <span>Critical assumption</span>
+          <p>Will customers trust a new brand enough to link their bank account?</p>
+        </div>
+      </>
+    );
+  }
+  if (panel === 'next') {
+    return (
+      <>
+        <div className="ls-rings">
+          {['Market Ready', 'Growth Ready', 'Investment Ready'].map(label => (
+            <div key={label}>
+              <span className="ls-ring">1</span>
+              <strong>{label}</strong>
+            </div>
+          ))}
+        </div>
+        <div className="ls-next">
+          <span>Do next ↗</span>
+          <p>Run a manual concierge test with 10 multiclient freelancers before building a full tax product.</p>
+        </div>
+      </>
+    );
+  }
+  if (panel === 'grant-lens' || panel === 'eligibility') {
+    return (
+      <div className="ls-mini">
+        {['Idea & sector relevance', 'Venture stage alignment', 'Eligibility to review'].map(row => (
+          <div key={row}><span>{row}</span>{icons.check}</div>
+        ))}
+      </div>
+    );
+  }
+  if (panel === 'stage') {
+    return (
+      <div className="ls-mini">
+        <div><strong>Ready</strong><span className="ls-pri on">Apply now</span></div>
+        <div><span>Later</span><span className="ls-pri">After the next milestone</span></div>
+      </div>
+    );
+  }
+  if (panel === 'sector') {
+    return (
+      <div className="ls-canvas">
+        <div><span>Sector</span><p>Closest fit, not a perfect taxonomy</p></div>
+        <div><span>Based in</span><p>State schemes follow this</p></div>
+        <div><span>National</span><p>Still appear on the shortlist</p></div>
+        <div><span>Applicant</span><p>Who is allowed to apply</p></div>
+      </div>
+    );
+  }
+  return (
+    <div className="ls-next">
+      <span>Official page ↗</span>
+      <p>Each ready match carries the provider, a short why, and the scheme site. We never submit the form.</p>
     </div>
   );
 }

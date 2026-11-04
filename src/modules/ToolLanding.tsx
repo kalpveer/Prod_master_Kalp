@@ -1,3 +1,4 @@
+import { ChevronDown } from 'lucide-react';
 import { PrismaHero } from '@/components/ui/prisma-hero';
 import ToolStory from './venture/ToolStory';
 
@@ -11,7 +12,15 @@ interface Props {
   onEnter: () => void;
 }
 
-/** Full-screen hero, then the tool story. The hero itself is unchanged. */
+function scrollToStory() {
+  const el = document.getElementById('story');
+  if (!el) return;
+  const lenis = (window as unknown as { lenis?: { scrollTo: (target: Element, opts?: object) => void } }).lenis;
+  if (lenis?.scrollTo) lenis.scrollTo(el, { offset: 0, duration: 1.15 });
+  else el.scrollIntoView({ behavior: 'smooth' });
+}
+
+/** Full-screen hero, then the tool story. */
 export default function ToolLanding({ kind, title, eyebrow, description, detail, ctaLabel, onEnter }: Props) {
   return (
     <div>
@@ -37,6 +46,22 @@ export default function ToolLanding({ kind, title, eyebrow, description, detail,
           </button>
         </div>
       </header>
+      <button
+        type="button"
+        className="vl-landing-scroll"
+        onClick={scrollToStory}
+        aria-label="Scroll to the story"
+      >
+        <span className="vl-landing-scroll__ring" aria-hidden>
+          <span className="vl-landing-scroll__track">
+            <span className="vl-landing-scroll__bead" />
+          </span>
+        </span>
+        <span className="vl-landing-scroll__label">
+          Scroll
+          <ChevronDown size={11} strokeWidth={2.4} />
+        </span>
+      </button>
       </div>
       <ToolStory kind={kind} onCta={onEnter} />
     </div>

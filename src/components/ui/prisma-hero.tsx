@@ -150,7 +150,7 @@ const PrismaHero = ({
         <div className={compact
           ? 'relative z-10 flex h-full min-h-[280px] flex-col justify-end px-6 py-6 md:min-h-[300px] md:px-8 md:py-7'
           : fill
-            ? 'absolute bottom-0 left-0 right-0 px-4 pb-8 sm:px-6 sm:pb-10 md:px-10 md:pb-12 lg:pb-14'
+            ? 'absolute bottom-0 left-0 right-0 px-4 pb-24 sm:px-6 sm:pb-24 md:px-10 md:pb-24 lg:pb-24'
             : 'absolute bottom-0 left-0 right-0 px-4 pb-2 sm:px-6 md:px-10'}>
           <div className={compact
             ? 'flex flex-col items-start gap-4'
