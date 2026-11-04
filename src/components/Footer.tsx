@@ -24,7 +24,7 @@ export default function Footer() {
           </div>
 
           <div className="text-xs text-white/30 font-mono md:text-right">
-            © {new Date().getFullYear()} Productica Inc.
+            © {new Date().getFullYear()} Productica AI Pvt. Ltd.
           </div>
         </div>
 
